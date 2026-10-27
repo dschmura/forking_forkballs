@@ -8,16 +8,17 @@ RSpec.describe "the release pull request template" do
     expect(template).to match(/reviewed on staging/i)
   end
 
-  it "ships only that commit, so a push after review cannot reach production unseen" do
-    expect(template).to include("--match-head-commit")
+  it "ships with bin/release, which merges only that commit" do
+    expect(template).to include("bin/release ship <this PR> <the commit above>")
   end
 
   it "lists what was held back, so next can restore it after the merge-back" do
     expect(template).to match(/held back/i)
   end
 
-  it "is how the releasing guide opens a release" do
-    expect(guide).to include("--body-file .github/PULL_REQUEST_TEMPLATE/release.md")
+  it "is filled in by bin/release cut, which the guide names" do
+    expect(template).to include("<!-- bin/release cut fills this")
+    expect(guide).to include("bin/release cut")
   end
 
   it "says how to switch a ruleset off in an emergency, and back on" do

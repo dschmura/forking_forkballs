@@ -268,7 +268,9 @@ bin/branch-rules          # one approval on every PR
 bin/branch-rules --solo   # no approval: you merge your own PRs
 ```
 
-It creates `next` from `main` and makes it the default branch, then applies
+It creates `next` from `main` and makes it the default branch, turns on
+auto-merge (a PR, yours or an agent's, can be queued to merge once its checks
+pass; the rules still apply), then applies
 the rulesets in `config/github/rulesets/`. Under those rules, `next`,
 `release/**` and `main` take changes only by PR, and only after `static` and
 `test` pass on an up-to-date branch. Rerunning it updates the rulesets in
@@ -279,9 +281,10 @@ place. It names any other ruleset on the repo, which you reconcile by hand.
 - **No one bypasses.** A bypass, even "through pull requests only", lets an
   admin's ordinary merge skip the approval and the up-to-date check, and nothing
   asks first.
-- **After anything lands on `main`, merge it back into `next`** through a branch
-  cut from `main` (`sync/main-into-next`). A PR whose head is `main` can't be
-  brought up to date, since that would push to `main`.
+- **After anything lands on `main`, merge it back into `next`** with
+  `bin/release merge-back`, which goes through a branch cut from `main`. A PR
+  whose head is `main` can't be brought up to date, since that would push to
+  `main`.
 - **Plan limits.** GitHub Free applies rulesets to public repositories only. On
   a private one the script reports each refused ruleset and exits non-zero.
 
