@@ -77,6 +77,16 @@ RSpec.describe ReleaseChangelog do
     end
   end
 
+  describe ".unreleased" do
+    it "returns the entries under [Unreleased], without their subsection headings" do
+      expect(described_class.unreleased(changelog)).to contain_exactly("- First feature.", "- A bug.", "- Second feature.")
+    end
+
+    it "returns none for the fresh [Unreleased] a named release starts" do
+      expect(described_class.unreleased(described_class.name_release(changelog, "2026.10.27"))).to be_empty
+    end
+  end
+
   describe ".names" do
     it "offers the day, then -2, -3 and onward" do
       expect(described_class.names(Date.new(2026, 10, 27)).first(3)).to eq(%w[2026.10.27 2026.10.27-2 2026.10.27-3])

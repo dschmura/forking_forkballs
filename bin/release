@@ -66,13 +66,15 @@ class Release
     branch = "release/#{name}"
     open = remote_refs.find { |ref| ref.start_with?("refs/heads/release/") && ref != "refs/heads/#{branch}" }
     raise Error, "#{open.delete_prefix('refs/heads/')} is still open: ship it or delete it before cutting another" if open
-    raise Error, "main isn't in next yet: merge the open merge-back PR first" unless ancestor?("origin/main", "origin/next")
+    commit, waiting = cut_point(name)
+    raise Error, "main isn't in next yet: merge the open merge-back PR first" unless ancestor?("origin/main", commit)
 
     say("== Cut #{branch} ==")
-    return dry("push #{branch} at next and open its PR into main") if dry_run?
+    say("  at #{commit[0, 7]}; #{waiting} later commit#{'s' unless waiting == 1} on next wait#{'s' if waiting == 1} for the next release") if waiting.positive?
+    return dry("push #{branch} at #{commit[0, 7]} and open its PR into main") if dry_run?
 
-    url = propose(branch, at: git("rev-parse", "origin/next"), base: "main", title: "Release #{name}",
-                  body: release_body(branch, ReleaseChangelog.section(changelog, name)))
+    url = propose(branch, at: commit, base: "main", title: "Release #{name}",
+                  body: release_body(branch, ReleaseChangelog.section(git("show", "#{commit}:CHANGELOG.md"), name)))
     say("  → #{url}")
     say("Then: review it on staging, and run bin/release ship <PR> <commit reviewed on staging>.")
   end
@@ -127,6 +129,21 @@ class Release
   def fetch
     @remote_refs = nil
     git("fetch", "-q", "--prune", "--tags", "origin")
+  end
+
+  def cut_point(name)
+    since_named = []
+    git("rev-list", "--first-parent", "origin/next").each_line(chomp: true) do |commit|
+      changelog = git("show", "#{commit}:CHANGELOG.md")
+      break unless ReleaseChangelog.named_release(changelog) == name
+
+      since_named << [ commit, ReleaseChangelog.unreleased(changelog) ]
+    end
+    later = since_named.index { |_, unreleased| unreleased.empty? }
+    return [ since_named[later].first, later ] if later
+
+    raise Error, "these landed under [Unreleased] before v#{name} was named, so they'd ship without a line in " \
+                 "What ships:\n#{since_named.first.last.join("\n")}\nMove them under ## v#{name} by a PR into next, then run cut again"
   end
 
   def release_name(info)

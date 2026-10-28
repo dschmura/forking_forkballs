@@ -313,12 +313,21 @@ second one starts after the first has shipped.
 bin/release cut
 ```
 
-Run it right after the changelog PR merges. `cut` takes `next` as it is
-when you run it, so a PR merged in between ships in this release without a
-line in "What ships", and is listed again in the next one. It pushes `next` as
-`release/<name>`, which deploys to staging, and opens the release PR into
-`main` from the release template. The PR body names the branch, and its "What
-ships" section is that release's changelog section.
+Run it once the changelog PR has merged. The release is `next` as it stood
+the last time its `[Unreleased]` section was empty: the commit that named the
+release, or a later one if the PRs merged since added no changelog line. The
+first PR that adds one waits for the next release, its line still under
+`[Unreleased]`, and `cut` says how many commits wait. However long after
+`prepare` you run it, the code in a release matches its "What ships".
+
+`cut` pushes that commit as `release/<name>`, which deploys to staging, and
+opens the release PR into `main` from the release template. The PR body names
+the branch, and its "What ships" section is that release's changelog section.
+
+A PR that merged while the changelog PR was still open can leave its line
+under `[Unreleased]` when the release was named, though its code is in the
+release. `cut` then refuses and lists what's under `[Unreleased]`. Move those
+lines under `## v<name>` with a PR into `next`, and run `cut` again.
 
 **One release at a time.** `cut` refuses while another `release/*` branch is
 open, because staging runs one build and a second candidate would replace the

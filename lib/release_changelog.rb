@@ -31,6 +31,11 @@ module ReleaseChangelog
     text[/^## \[Unreleased\]\n.*?^## v(#{NAME})$/m, 1]
   end
 
+  def unreleased(text)
+    body = text.split(UNRELEASED, 2).last.to_s.split(/^(?=## )/, 2).first.to_s
+    fold(body).values.flatten
+  end
+
   def section(text, name)
     text[/^## v#{Regexp.escape(name)}\n(.*?)(?=^## |\z)/m, 1]&.strip
   end

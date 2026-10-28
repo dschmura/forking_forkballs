@@ -13,6 +13,7 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ### Fixed
 
+- `bin/release cut` cuts `next` as it stood the last time `[Unreleased]` was empty, so a PR merged after `prepare` waits for the next release instead of shipping without a line in "What ships"; it refuses, listing the lines, when they landed under `[Unreleased]` while the changelog PR was open.
 - `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.
 
 ## v2026.10.27
