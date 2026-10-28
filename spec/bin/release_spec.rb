@@ -172,6 +172,22 @@ RSpec.describe Release do
       expect(remote_heads).to contain_exactly("main", "next")
     end
 
+    it "starts no release under --skip-if-empty when nothing is under [Unreleased], and says so" do
+      setup_repo(next_changelog: named)
+      git("push", "-q", "origin", "main:refs/tags/v2026.10.27")
+      run_release("prepare", skip_if_empty: true)
+
+      expect(@output).to include("Nothing under [Unreleased] on next")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "names the release as usual under --skip-if-empty when [Unreleased] has entries" do
+      setup_repo
+      run_release("prepare", skip_if_empty: true)
+
+      expect(remote_heads).to include("changelog/2026.10.27")
+    end
+
     it "names the next release once the last one has shipped" do
       setup_repo(next_changelog: named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Later.\n"))
       git("push", "-q", "origin", "main:refs/tags/v2026.10.27")

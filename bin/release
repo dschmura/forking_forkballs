@@ -43,6 +43,7 @@ class Release
     if pending && !tagged?(pending)
       raise Error, "v#{pending} is named but hasn't shipped: finish it with bin/release cut and ship first"
     end
+    return say("Nothing under [Unreleased] on next, so no release to start.") if @opts[:skip_if_empty] && ReleaseChangelog.unreleased(changelog).empty?
 
     name = ReleaseChangelog.names(@opts.fetch(:today) { Date.today }).find { |n| !tagged?(n) && !branch?("release/#{n}") }
     say("== Prepare v#{name} ==")
@@ -230,6 +231,7 @@ if $PROGRAM_NAME == __FILE__
   OptionParser.new do |o|
     o.banner = "#{Release::USAGE}   (see /docs/developer/releasing)"
     o.on("--dry-run", "Print the plan without changing anything") { options[:dry_run] = true }
+    o.on("--skip-if-empty", "prepare: start no release when [Unreleased] is empty") { options[:skip_if_empty] = true }
   end.parse!
 
   begin

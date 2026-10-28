@@ -4,6 +4,10 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+### Added
+
+- `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release when a release's merge-back merges and cuts it when its changelog PR merges; `bin/release prepare --skip-if-empty` starts nothing when `[Unreleased]` is empty.
+
 ### Changed
 
 - `/docs/developer/releasing` opens with why the flow exists (test your own work first, ask reviewers once a release) and a diagram of it, and adds "Before it merges", "Keep each PR removable" and "Where this is heading".
