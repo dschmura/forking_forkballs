@@ -17,7 +17,7 @@ class Release
 
   CLEAN_GIT_ENV = ::CleanGitEnv::HASH
   TEMPLATE = ".github/PULL_REQUEST_TEMPLATE/release.md"
-  USAGE = "usage: bin/release prepare | cut | ship <PR> <reviewed-sha> | merge-back"
+  USAGE = "usage: bin/release prepare | cut | ship <PR> <commit reviewed on staging> | merge-back"
   ONCE_READY = "once its checks pass and any required approval is given"
   BODY_LIMIT = 60_000
 
@@ -53,7 +53,7 @@ class Release
     url = propose("changelog/#{name}", at: commit, base: "next", title: "Changelog for release #{name}",
                   body: "Names `[Unreleased]` as v#{name} so `bin/release cut` can cut it.\n", auto_merge: true)
     say("  → #{url}, merging into next #{ONCE_READY}")
-    say("Next: bin/release cut, once it has merged.")
+    say("Then: bin/release cut, once it has merged.")
   end
 
   def cut
@@ -74,11 +74,11 @@ class Release
     url = propose(branch, at: git("rev-parse", "origin/next"), base: "main", title: "Release #{name}",
                   body: release_body(branch, ReleaseChangelog.section(changelog, name)))
     say("  → #{url}")
-    say("Next: review it on staging, then bin/release ship <PR> <the commit staging runs>.")
+    say("Then: review it on staging, and run bin/release ship <PR> <commit reviewed on staging>.")
   end
 
   def ship(pr = nil, sha = nil)
-    raise Error, "usage: bin/release ship <PR> <the commit reviewed on staging>" unless pr && sha
+    raise Error, "usage: bin/release ship <PR> <commit reviewed on staging>" unless pr && sha
 
     info = pr_info(pr)
     name = release_name(info)

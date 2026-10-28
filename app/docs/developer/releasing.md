@@ -228,7 +228,7 @@ its tag and a commit to roll back to.
 | --- | --- |
 | Name the release in the changelog | `bin/release prepare` |
 | Cut the candidate | `bin/release cut` |
-| Ship the reviewed commit | `bin/release ship <PR> <commit>` |
+| Ship the reviewed commit | `bin/release ship <PR> <commit reviewed on staging>` |
 | Merge `main` back after a hotfix | `bin/release merge-back` |
 
 ## Before it merges
