@@ -15,6 +15,21 @@ RSpec.describe "The releasing guide's flow diagram" do
     expect(narrow["class"].split).to include("max-w-xs")
   end
 
+  it "colors each version only with token classes the stylesheet already compiles" do
+    layout = %w[hidden md:block md:hidden max-w-xs mx-auto]
+    tokens = %w[text-accent text-info text-warning text-success text-surface-raised]
+
+    svgs.each do |svg|
+      used = svg.css("[class]").flat_map { |node| node["class"].split }.uniq
+      expect(used - layout - tokens).to be_empty
+      expect(used).to include("text-info", "text-warning", "text-success")
+    end
+  end
+
+  it "follows one story, #1487, through every stop on desktop" do
+    expect(wide.css("text").map(&:text).join(" ")).to include("#1487").and include("New onboarding flow").and include("LIVE")
+  end
+
   it "names both versions for assistive tech" do
     svgs.each do |svg|
       expect(svg["role"]).to eq("img")
@@ -37,7 +52,8 @@ RSpec.describe "The releasing guide's flow diagram" do
 
       svg.css("text").each do |text|
         group_scale = text.ancestors("g").map { |g| g["transform"].to_s[/scale\(([\d.]+)\)/, 1]&.to_f || 1 }.reduce(1, :*)
-        rendered = text["font-size"].to_f * group_scale * scale
+        font_size = [ text, *text.ancestors ].find { |node| node.respond_to?(:[]) && node["font-size"] }["font-size"].to_f
+        rendered = font_size * group_scale * scale
         expect(rendered).to be >= 12, "#{text.text.inspect} renders at #{rendered.round(1)}px"
       end
     end

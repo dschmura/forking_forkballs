@@ -12,164 +12,193 @@ every PR; they're asked once per release, when the PRs are running together
 on staging and a person's judgment is what's needed. Production only ever
 runs a release someone checked, tagged so you can roll back to it.
 
-<svg viewBox="0 0 560 522" width="100%" class="hidden md:block" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with Try it steps, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
     </marker>
   </defs>
-  <text x="130" y="24" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
-  <text x="130" y="44" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The draft</text>
-  <text x="130" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">your machine</text>
-  <text x="130" y="210" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked by you</text>
-  <g transform="translate(50 6)">
-  <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
-  <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
-  <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
-  <text x="50" y="84" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">#1487</text>
-  <line x1="50" y1="98" x2="108" y2="98" stroke-width="1" opacity="0.5"/>
-  <line x1="50" y1="110" x2="100" y2="110" stroke-width="1" opacity="0.5"/>
-  <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
-  <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="text-accent" x="0" y="0" width="250" height="240" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-info" x="310" y="0" width="250" height="240" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-warning" x="0" y="290" width="250" height="240" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-success" x="310" y="290" width="250" height="240" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <g class="text-surface-raised" fill="currentColor" stroke="none">
+    <rect x="40" y="52" width="170" height="132" rx="2"/>
+    <rect x="100" y="34" width="50" height="12" rx="3"/>
+    <rect x="330" y="44" width="210" height="26" rx="2" transform="rotate(-1 435 57)"/>
+    <rect x="330" y="74" width="210" height="26" rx="2" transform="rotate(1 435 87)"/>
+    <rect x="330" y="104" width="210" height="26" rx="2" transform="rotate(-1 435 117)"/>
+    <rect x="330" y="134" width="210" height="26" rx="2" transform="rotate(1 435 147)"/>
+    <path d="M14 336 Q67 328 120 338 L120 478 Q67 470 14 476 Z"/>
+    <path d="M120 338 Q173 328 226 336 L226 476 Q173 470 120 478 Z"/>
+    <rect x="458" y="372" width="92" height="24" rx="2"/>
+    <rect x="454" y="398" width="92" height="24" rx="2"/>
+    <rect x="450" y="424" width="104" height="46" rx="3"/>
   </g>
-  <line class="text-accent" x1="190" y1="115" x2="356" y2="115" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="273" y="105" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">merge</text>
-  <text x="420" y="24" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">next</text>
-  <text x="420" y="44" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The pile</text>
-  <text x="420" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys nowhere</text>
-  <text x="420" y="210" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked by CI, one at a time</text>
-  <g transform="translate(150 3)">
-  <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
-  <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
-  <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
-  <rect x="220" y="124" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 132)"/>
-  <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
-  <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="30" y="40" width="190" height="152" rx="6" stroke-width="1.5"/>
+  <rect x="40" y="52" width="170" height="132" rx="2" stroke-width="1"/>
+  <rect x="100" y="34" width="50" height="12" rx="3" stroke-width="1.5"/>
+  <line x1="52" y1="160" x2="198" y2="160" stroke-width="1" stroke-dasharray="3 3"/>
+  <rect x="330" y="44" width="210" height="26" rx="2" stroke-width="1.25" transform="rotate(-1 435 57)"/>
+  <rect x="330" y="74" width="210" height="26" rx="2" stroke-width="1.25" transform="rotate(1 435 87)"/>
+  <rect class="text-info" x="330" y="104" width="210" height="26" rx="2" stroke-width="2" transform="rotate(-1 435 117)"/>
+  <rect x="330" y="134" width="210" height="26" rx="2" stroke-width="1.25" transform="rotate(1 435 147)"/>
+  <path class="text-info" d="M516 57 L520 61 L528 52 M516 87 L520 91 L528 82 M516 117 L520 121 L528 112 M516 147 L520 151 L528 142" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M14 336 Q67 328 120 338 L120 478 Q67 470 14 476 Z" stroke-width="1.5"/>
+  <path d="M120 338 Q173 328 226 336 L226 476 Q173 470 120 478 Z" stroke-width="1.5"/>
+  <path class="text-warning" d="M131 437 L135 441 L143 432" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="text-success" x="330" y="334" width="104" height="136" rx="3" fill="currentColor" stroke="none" opacity="0.18"/>
+  <rect class="text-success" x="330" y="334" width="104" height="136" rx="3" stroke-width="2"/>
+  <line class="text-success" x1="322" y1="476" x2="442" y2="476" stroke-width="3"/>
+  <rect class="text-surface-raised" x="398" y="326" width="46" height="20" rx="2" fill="currentColor" stroke="none" transform="rotate(4 421 336)"/>
+  <rect class="text-success" x="398" y="326" width="46" height="20" rx="2" stroke-width="1.5" transform="rotate(4 421 336)"/>
+  <rect x="458" y="372" width="92" height="24" rx="2" stroke-width="1"/>
+  <rect x="454" y="398" width="92" height="24" rx="2" stroke-width="1"/>
+  <rect x="450" y="424" width="104" height="46" rx="3" stroke-width="1.5"/>
+  <line x1="252" y1="115" x2="304" y2="115" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <path d="M435 242 L435 264 L125 264 L125 284" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <line x1="252" y1="410" x2="304" y2="410" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <path d="M435 532 L435 546 L578 546 L578 115 L566 115" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-release)"/>
+  <g fill="currentColor" stroke="none" font-size="13">
+    <text class="text-accent" x="14" y="24" font-size="15" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
+    <text x="236" y="24" text-anchor="end">The draft</text>
+    <text class="text-accent" x="52" y="72" font-family="ui-monospace, monospace">#1487</text>
+    <text x="52" y="92" font-weight="700">New onboarding flow</text>
+    <text x="52" y="114">1  Name your workspace</text>
+    <text x="52" y="132">2  Invite your team</text>
+    <text x="52" y="150">3  Pick a plan</text>
+    <text class="text-accent" x="52" y="177">Try it: steps in the PR</text>
+    <text x="125" y="214" text-anchor="middle">on your machine</text>
+    <text x="125" y="232" text-anchor="middle">checked by you</text>
+    <text class="text-info" x="324" y="24" font-size="15" font-weight="700" font-family="ui-monospace, monospace">next</text>
+    <text x="546" y="24" text-anchor="end">The pile</text>
+    <text x="340" y="62"><tspan font-family="ui-monospace, monospace">#1485</tspan> CSV export</text>
+    <text x="340" y="92"><tspan font-family="ui-monospace, monospace">#1486</tspan> Who's online</text>
+    <text x="340" y="122" font-weight="700"><tspan font-family="ui-monospace, monospace">#1487</tspan> New onboarding</text>
+    <text x="340" y="152"><tspan font-family="ui-monospace, monospace">#1488</tspan> Search</text>
+    <text x="435" y="214" text-anchor="middle">deploys nowhere</text>
+    <text x="435" y="232" text-anchor="middle">checked by CI, one at a time</text>
+    <text class="text-warning" x="14" y="314" font-size="15" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+    <text x="236" y="314" text-anchor="end">The book</text>
+    <text x="24" y="360" font-weight="700">Contents</text>
+    <text x="24" y="382">1 CSV export</text>
+    <text x="24" y="400">2 Who's online</text>
+    <text class="text-warning" x="24" y="418" font-weight="700">3 Onboarding</text>
+    <text x="24" y="436">4 Search</text>
+    <text x="130" y="360">page 3</text>
+    <text class="text-warning" x="130" y="380" font-family="ui-monospace, monospace">#1487</text>
+    <text x="130" y="398" font-weight="700">Onboarding</text>
+    <text x="130" y="422">Try it steps</text>
+    <text class="text-warning" x="149" y="442">passed</text>
+    <text x="125" y="504" text-anchor="middle">deploys to staging</text>
+    <text x="125" y="522" text-anchor="middle">checked together</text>
+    <text class="text-success" x="324" y="314" font-size="15" font-weight="700" font-family="ui-monospace, monospace">main</text>
+    <text x="546" y="314" text-anchor="end">Published</text>
+    <text class="text-success" x="421" y="341" text-anchor="middle" font-weight="700" font-family="ui-monospace, monospace" transform="rotate(4 421 336)">LIVE</text>
+    <text x="338" y="368" font-family="ui-monospace, monospace">v2026.10.27</text>
+    <text x="338" y="458">6 stories</text>
+    <text x="462" y="389" font-family="ui-monospace, monospace">v2026.10.20</text>
+    <text x="458" y="415" font-family="ui-monospace, monospace">v2026.10.13</text>
+    <text x="502" y="452" text-anchor="middle">archive</text>
+    <text x="435" y="504" text-anchor="middle">deploys to production</text>
+    <text x="435" y="522" text-anchor="middle">earlier versions archived</text>
+    <text x="279" y="105" text-anchor="middle">merge</text>
+    <text x="280" y="258" text-anchor="middle" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
+    <text x="279" y="386" text-anchor="middle" font-family="ui-monospace, monospace">bin/release</text>
+    <text x="279" y="400" text-anchor="middle" font-weight="700" font-family="ui-monospace, monospace">ship</text>
+    <text x="578" y="572" text-anchor="end">merge-back: the next release starts from what production runs</text>
   </g>
-  <path class="text-accent" d="M420 224 L420 240 L130 240 L130 256" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="275" y="233" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
-  <text x="130" y="274" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
-  <text x="130" y="294" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The book</text>
-  <text x="130" y="442" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys to staging</text>
-  <text x="130" y="460" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked together</text>
-  <g transform="translate(-339 253)">
-  <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
-  <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
-  <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="100" x2="444" y2="100" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="112" x2="444" y2="112" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="124" x2="444" y2="124" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="136" x2="444" y2="136" stroke-width="1" opacity="0.5"/>
-  <path class="text-accent" d="M448 87 L450 90 L455 84 M448 99 L450 102 L455 96 M448 111 L450 114 L455 108" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="476" y1="88" x2="520" y2="88" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="100" x2="516" y2="100" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="112" x2="520" y2="112" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="124" x2="508" y2="124" stroke-width="1" opacity="0.5"/>
-  <rect class="text-accent" x="531" y="78" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="93" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="108" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  </g>
-  <line class="text-accent" x1="212" y1="368" x2="340" y2="368" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="276" y="340" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-family="ui-monospace, monospace">bin/release</text>
-  <text x="276" y="356" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-weight="700" font-family="ui-monospace, monospace">ship</text>
-  <text x="420" y="274" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">main</text>
-  <text x="420" y="294" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">Published</text>
-  <text x="420" y="442" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys to production</text>
-  <text x="420" y="460" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">earlier versions archived</text>
-  <g transform="translate(-257 249)">
-  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
-  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
-  <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
-  <line class="text-accent" x1="628" y1="94" x2="654" y2="94" stroke-width="1.5"/>
-  <line class="text-accent" x1="610" y1="150" x2="682" y2="150" stroke-width="3"/>
-  <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
-  <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
-  <text x="716" y="152" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">archive</text>
-  </g>
-  <path d="M420 472 L420 482 L530 482 L530 115 L482 115" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
-  <text x="530" y="502" text-anchor="end" fill="currentColor" stroke="none" font-size="13">merge-back: the next release starts from what production runs</text>
 </svg>
 
-<svg viewBox="0 0 340 692" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 340 816" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow, top to bottom. Your branch, the draft, checked by you on your own machine. It merges into next, the pile, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, the book, checked together on staging. bin/release ship publishes it on main, in production, and earlier versions are archived. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release-narrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
     </marker>
   </defs>
-  <g transform="translate(8 -9.75) scale(0.75)">
-  <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
-  <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
-  <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
-  <line x1="50" y1="98" x2="108" y2="98" stroke-width="1" opacity="0.5"/>
-  <line x1="50" y1="110" x2="100" y2="110" stroke-width="1" opacity="0.5"/>
-  <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
-  <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect class="text-accent" x="0" y="0" width="320" height="156" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-info" x="0" y="200" width="320" height="156" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-warning" x="0" y="400" width="320" height="156" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <rect class="text-success" x="0" y="600" width="320" height="156" rx="12" fill="currentColor" stroke="none" opacity="0.1"/>
+  <g transform="translate(62 96)">
+    <rect x="-32" y="-38" width="64" height="76" rx="4" stroke-width="1.5"/>
+    <rect class="text-surface-raised" x="-26" y="-30" width="52" height="62" rx="1" fill="currentColor" stroke="none"/>
+    <rect x="-26" y="-30" width="52" height="62" rx="1" stroke-width="1"/>
+    <rect class="text-surface-raised" x="-12" y="-42" width="24" height="9" rx="2" fill="currentColor" stroke="none"/>
+    <rect x="-12" y="-42" width="24" height="9" rx="2" stroke-width="1.5"/>
+    <path class="text-accent" d="M-20 -20 L-6 -20" stroke-width="2" stroke-linecap="round"/>
+    <path d="M-20 -10 L16 -10" stroke-width="2" stroke-linecap="round"/>
+    <path d="M-20 2 L14 2 M-20 12 L10 12" stroke-width="1"/>
+    <path class="text-accent" d="M-20 24 L18 24" stroke-width="1.5" stroke-dasharray="2 2"/>
   </g>
-  <text x="140" y="42" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
-  <text x="140" y="66" fill="currentColor" stroke="none" font-size="16">The draft</text>
-  <text x="140" y="94" fill="currentColor" stroke="none" font-size="16">your machine</text>
-  <text x="140" y="116" fill="currentColor" stroke="none" font-size="16">checked by you</text>
-  <line class="text-accent" x1="68" y1="124" x2="68" y2="188" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
-  <text x="84" y="162" fill="currentColor" stroke="none" font-size="16">merge</text>
-  <g transform="translate(-134.5 148) scale(0.75)">
-  <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
-  <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
-  <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
-  <rect x="220" y="124" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 132)"/>
-  <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
-  <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(62 296)">
+    <g class="text-surface-raised" fill="currentColor" stroke="none">
+      <rect x="-36" y="-28" width="72" height="12" rx="1" transform="rotate(-1 0 -22)"/>
+      <rect x="-36" y="-12" width="72" height="12" rx="1" transform="rotate(1 0 -6)"/>
+      <rect x="-36" y="4" width="72" height="12" rx="1" transform="rotate(-1 0 10)"/>
+      <rect x="-36" y="20" width="72" height="12" rx="1" transform="rotate(1 0 26)"/>
+    </g>
+    <rect x="-36" y="-28" width="72" height="12" rx="1" stroke-width="1.25" transform="rotate(-1 0 -22)"/>
+    <rect x="-36" y="-12" width="72" height="12" rx="1" stroke-width="1.25" transform="rotate(1 0 -6)"/>
+    <rect class="text-info" x="-36" y="4" width="72" height="12" rx="1" stroke-width="2" transform="rotate(-1 0 10)"/>
+    <rect x="-36" y="20" width="72" height="12" rx="1" stroke-width="1.25" transform="rotate(1 0 26)"/>
+    <path class="text-info" d="M22 -22 L25 -19 L31 -26 M22 -6 L25 -3 L31 -10 M22 10 L25 13 L31 6 M22 26 L25 29 L31 22" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="140" y="202" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">next</text>
-  <text x="140" y="226" fill="currentColor" stroke="none" font-size="16">The pile</text>
-  <text x="140" y="254" fill="currentColor" stroke="none" font-size="16">deploys nowhere</text>
-  <text x="140" y="276" fill="currentColor" stroke="none" font-size="16">checked by CI,</text>
-  <text x="140" y="298" fill="currentColor" stroke="none" font-size="16">one at a time</text>
-  <line class="text-accent" x1="68" y1="280" x2="68" y2="348" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
-  <text x="84" y="322" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
-  <g transform="translate(-283.75 308) scale(0.75)">
-  <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
-  <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
-  <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="100" x2="444" y2="100" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="112" x2="444" y2="112" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="124" x2="444" y2="124" stroke-width="1" opacity="0.5"/>
-  <line x1="410" y1="136" x2="444" y2="136" stroke-width="1" opacity="0.5"/>
-  <path class="text-accent" d="M448 87 L450 90 L455 84 M448 99 L450 102 L455 96 M448 111 L450 114 L455 108" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <line x1="476" y1="88" x2="520" y2="88" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="100" x2="516" y2="100" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="112" x2="520" y2="112" stroke-width="1" opacity="0.5"/>
-  <line x1="476" y1="124" x2="508" y2="124" stroke-width="1" opacity="0.5"/>
-  <rect class="text-accent" x="531" y="78" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="93" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="108" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <g transform="translate(62 496)">
+    <g class="text-surface-raised" fill="currentColor" stroke="none">
+      <path d="M-42 -26 Q-21 -31 0 -24 L0 30 Q-21 25 -42 28 Z"/>
+      <path d="M0 -24 Q21 -31 42 -26 L42 28 Q21 25 0 30 Z"/>
+    </g>
+    <path d="M-42 -26 Q-21 -31 0 -24 L0 30 Q-21 25 -42 28 Z" stroke-width="1.5"/>
+    <path d="M0 -24 Q21 -31 42 -26 L42 28 Q21 25 0 30 Z" stroke-width="1.5"/>
+    <path d="M-34 -14 L-8 -14 M-34 -4 L-8 -4 M-34 16 L-8 16 M8 -14 L34 -14 M8 -4 L30 -4" stroke-width="1"/>
+    <path class="text-warning" d="M-34 6 L-8 6" stroke-width="2" stroke-linecap="round"/>
+    <path class="text-warning" d="M8 8 L12 12 L20 2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="140" y="362" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
-  <text x="140" y="386" fill="currentColor" stroke="none" font-size="16">The book</text>
-  <text x="140" y="414" fill="currentColor" stroke="none" font-size="16">deploys to staging</text>
-  <text x="140" y="436" fill="currentColor" stroke="none" font-size="16">checked together</text>
-  <line class="text-accent" x1="68" y1="440" x2="68" y2="508" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
-  <text x="84" y="478" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">ship</tspan></text>
-  <g transform="translate(-439.75 465) scale(0.75)">
-  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
-  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
-  <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
-  <line class="text-accent" x1="628" y1="94" x2="654" y2="94" stroke-width="1.5"/>
-  <line class="text-accent" x1="610" y1="150" x2="682" y2="150" stroke-width="3"/>
-  <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
-  <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
+  <g transform="translate(62 696)">
+    <rect class="text-success" x="-40" y="-34" width="40" height="58" rx="2" fill="currentColor" stroke="none" opacity="0.18"/>
+    <rect class="text-success" x="-40" y="-34" width="40" height="58" rx="2" stroke-width="2"/>
+    <line class="text-success" x1="-46" y1="28" x2="6" y2="28" stroke-width="3"/>
+    <rect class="text-surface-raised" x="-14" y="-38" width="22" height="9" rx="1.5" fill="currentColor" stroke="none" transform="rotate(4 -3 -33)"/>
+    <rect class="text-success" x="-14" y="-38" width="22" height="9" rx="1.5" stroke-width="1.25" transform="rotate(4 -3 -33)"/>
+    <g class="text-surface-raised" fill="currentColor" stroke="none">
+      <rect x="12" y="-6" width="30" height="10" rx="1"/>
+      <rect x="10" y="4" width="30" height="10" rx="1"/>
+      <rect x="8" y="12" width="36" height="18" rx="2"/>
+    </g>
+    <rect x="12" y="-6" width="30" height="10" rx="1" stroke-width="1"/>
+    <rect x="10" y="4" width="30" height="10" rx="1" stroke-width="1"/>
+    <rect x="8" y="12" width="36" height="18" rx="2" stroke-width="1.5"/>
   </g>
-  <text x="140" y="522" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">main</text>
-  <text x="140" y="546" fill="currentColor" stroke="none" font-size="16">Published</text>
-  <text x="140" y="574" fill="currentColor" stroke="none" font-size="16">deploys to production</text>
-  <text x="140" y="596" fill="currentColor" stroke="none" font-size="16">earlier versions</text>
-  <text x="140" y="618" fill="currentColor" stroke="none" font-size="16">archived</text>
-  <path d="M16 545 L6 545 L6 232 L26 232" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release-narrow)"/>
-  <text x="6" y="646" fill="currentColor" stroke="none" font-size="16">merge-back: the next release</text>
-  <text x="6" y="668" fill="currentColor" stroke="none" font-size="16">starts from what production runs</text>
+  <line x1="62" y1="158" x2="62" y2="194" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <line x1="62" y1="358" x2="62" y2="394" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <line x1="62" y1="558" x2="62" y2="594" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <path d="M322 696 L332 696 L332 296 L326 296" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow-release-narrow)"/>
+  <g fill="currentColor" stroke="none" font-size="16">
+    <text class="text-accent" x="14" y="28" font-size="18" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
+    <text x="306" y="28" text-anchor="end">The draft</text>
+    <text x="120" y="80">on your machine</text>
+    <text x="120" y="100">checked by you</text>
+    <text class="text-info" x="14" y="228" font-size="18" font-weight="700" font-family="ui-monospace, monospace">next</text>
+    <text x="306" y="228" text-anchor="end">The pile</text>
+    <text x="120" y="280">deploys nowhere</text>
+    <text x="120" y="300">checked by CI,</text>
+    <text x="120" y="320">one at a time</text>
+    <text class="text-warning" x="14" y="428" font-size="18" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+    <text x="306" y="428" text-anchor="end">The book</text>
+    <text x="120" y="480">deploys to staging</text>
+    <text x="120" y="500">checked together</text>
+    <text class="text-success" x="14" y="628" font-size="18" font-weight="700" font-family="ui-monospace, monospace">main</text>
+    <text x="306" y="628" text-anchor="end">Published</text>
+    <text x="120" y="680">deploys to production</text>
+    <text x="120" y="700">earlier versions</text>
+    <text x="120" y="720">archived</text>
+    <text x="78" y="183">merge</text>
+    <text x="78" y="383" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
+    <text x="78" y="583" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">ship</tspan></text>
+    <text x="0" y="788">merge-back: the next release</text>
+    <text x="0" y="810">starts from what production runs</text>
+  </g>
 </svg>
 
 Every PR is a story. On your branch it's a draft only you have read. Merged
