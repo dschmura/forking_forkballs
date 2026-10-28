@@ -184,8 +184,16 @@ RSpec.describe Release do
   describe "cut" do
     let(:with_later_entry) { named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Landed after prepare.\n") }
 
+    def land_on_next(changelog: nil, file: nil)
+      clone.join("CHANGELOG.md").write(changelog) if changelog
+      clone.join(file).write("#{file}\n") if file
+      git("add", "-A")
+      git("commit", "-q", "-m", "landed on next")
+      git("push", "-q", "origin", "HEAD:next")
+    end
+
     it "pushes release/<name> at next and opens the release PR with what ships" do
-      setup_repo(next_changelog: with_later_entry)
+      setup_repo(next_changelog: named)
       run_release("cut")
 
       expect(git("rev-parse", "origin/release/2026.10.27")).to eq(git("rev-parse", "origin/next"))
@@ -193,7 +201,32 @@ RSpec.describe Release do
       body = calls[/BODY<<\n(.*?)>>BODY/m, 1]
       expect(body).to include("- Branch: `release/2026.10.27`")
       expect(body).to include("- First feature.\n- Second feature.")
-      expect(body).not_to include("Landed after prepare")
+    end
+
+    it "cuts before the first PR that landed a changelog line after the release was named" do
+      setup_repo(next_changelog: named)
+      named_at = git("rev-parse", "origin/next")
+      land_on_next(changelog: with_later_entry, file: "later.rb")
+      run_release("cut")
+
+      expect(git("rev-parse", "origin/release/2026.10.27")).to eq(named_at)
+      expect(calls[/BODY<<\n(.*?)>>BODY/m, 1]).not_to include("Landed after prepare")
+      expect(@output).to include("1 later commit on next waits for the next release")
+    end
+
+    it "takes along what landed after the name without a changelog line" do
+      setup_repo(next_changelog: named)
+      land_on_next(file: "docs.md")
+      run_release("cut")
+
+      expect(git("rev-parse", "origin/release/2026.10.27")).to eq(git("rev-parse", "origin/next"))
+    end
+
+    it "refuses when lines landed under [Unreleased] before the release was named, and lists them" do
+      setup_repo(next_changelog: with_later_entry)
+
+      expect { run_release("cut") }.to raise_error(Release::Error, /- Landed after prepare\..*## v2026\.10\.27/m)
+      expect(remote_heads).not_to include("release/2026.10.27")
     end
 
     it "refuses until prepare's changelog has landed on next" do
