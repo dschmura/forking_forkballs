@@ -7,6 +7,7 @@ RSpec.describe "The releasing guide's flow diagram" do
   let(:wide) { svgs.find { |svg| svg["class"].to_s.split.include?("md:block") } }
   let(:narrow) { svgs.find { |svg| svg["class"].to_s.split.include?("md:hidden") } }
   let(:smallest_phone_width) { 264 }
+  let(:narrowest_column_with_sidebar) { 565 }
 
   it "draws a wide version from tablet width up and a narrow one below it" do
     expect(svgs.size).to eq(2)
@@ -30,13 +31,15 @@ RSpec.describe "The releasing guide's flow diagram" do
     end
   end
 
-  it "sets the narrow version's words at 12px or more on a 360px phone" do
-    scale = smallest_phone_width / narrow["viewBox"].split[2].to_f
+  it "sets every word at 12px or more, the narrow version on a 360px phone and the wide one beside the docs sidebar" do
+    { narrow => smallest_phone_width, wide => narrowest_column_with_sidebar }.each do |svg, width|
+      scale = width / svg["viewBox"].split[2].to_f
 
-    narrow.css("text").each do |text|
-      group_scale = text.ancestors("g").map { |g| g["transform"].to_s[/scale\(([\d.]+)\)/, 1]&.to_f || 1 }.reduce(1, :*)
-      rendered = text["font-size"].to_f * group_scale * scale
-      expect(rendered).to be >= 12, "#{text.text.inspect} renders at #{rendered.round(1)}px"
+      svg.css("text").each do |text|
+        group_scale = text.ancestors("g").map { |g| g["transform"].to_s[/scale\(([\d.]+)\)/, 1]&.to_f || 1 }.reduce(1, :*)
+        rendered = text["font-size"].to_f * group_scale * scale
+        expect(rendered).to be >= 12, "#{text.text.inspect} renders at #{rendered.round(1)}px"
+      end
     end
   end
 

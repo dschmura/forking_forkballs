@@ -12,42 +12,47 @@ every PR; they're asked once per release, when the PRs are running together
 on staging and a person's judgment is what's needed. Production only ever
 runs a release someone checked, tagged so you can roll back to it.
 
-<svg viewBox="0 0 800 280" width="100%" class="hidden md:block" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 560 522" width="100%" class="hidden md:block" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
     </marker>
   </defs>
-  <text x="80" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
-  <text x="80" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The draft</text>
+  <text x="130" y="24" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
+  <text x="130" y="44" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The draft</text>
+  <text x="130" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">your machine</text>
+  <text x="130" y="210" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked by you</text>
+  <g transform="translate(50 6)">
   <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
   <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
   <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
-  <text x="50" y="84" fill="currentColor" stroke="none" font-size="10" font-family="ui-monospace, monospace">#1487</text>
+  <text x="50" y="84" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">#1487</text>
   <line x1="50" y1="98" x2="108" y2="98" stroke-width="1" opacity="0.5"/>
   <line x1="50" y1="110" x2="100" y2="110" stroke-width="1" opacity="0.5"/>
   <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
   <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="80" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">your machine</text>
-  <text x="80" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked by you</text>
-  <line class="text-accent" x1="144" y1="112" x2="206" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="176" y="102" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">merge</text>
-  <text x="270" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">next</text>
-  <text x="270" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The pile</text>
+  </g>
+  <line class="text-accent" x1="190" y1="115" x2="356" y2="115" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="273" y="105" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">merge</text>
+  <text x="420" y="24" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">next</text>
+  <text x="420" y="44" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The pile</text>
+  <text x="420" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys nowhere</text>
+  <text x="420" y="210" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked by CI, one at a time</text>
+  <g transform="translate(150 3)">
   <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
   <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
   <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
   <rect x="220" y="124" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 132)"/>
   <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
   <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="270" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys nowhere</text>
-  <text x="270" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked by CI, one at a time</text>
-  <line class="text-accent" x1="330" y1="112" x2="406" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="368" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
-  <text x="368" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">cut</text>
-  <g transform="translate(20 0)">
-  <text x="465" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
-  <text x="465" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The book</text>
+  </g>
+  <path class="text-accent" d="M420 224 L420 240 L130 240 L130 256" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="275" y="233" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
+  <text x="130" y="274" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="130" y="294" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">The book</text>
+  <text x="130" y="442" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys to staging</text>
+  <text x="130" y="460" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">checked together</text>
+  <g transform="translate(-339 253)">
   <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
   <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
   <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
@@ -65,15 +70,15 @@ runs a release someone checked, tagged so you can roll back to it.
   <rect class="text-accent" x="531" y="108" width="7" height="11" rx="1.5" stroke-width="1.25"/>
   <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
   <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
-  <text x="465" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys to staging</text>
-  <text x="465" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked together</text>
   </g>
-  <line class="text-accent" x1="566" y1="112" x2="642" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
-  <text x="604" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
-  <text x="604" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">ship</text>
-  <g transform="translate(40 0)">
-  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">main</text>
-  <text x="675" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">Published</text>
+  <line class="text-accent" x1="212" y1="368" x2="340" y2="368" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="276" y="340" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-family="ui-monospace, monospace">bin/release</text>
+  <text x="276" y="356" text-anchor="middle" fill="currentColor" stroke="none" font-size="13" font-weight="700" font-family="ui-monospace, monospace">ship</text>
+  <text x="420" y="274" text-anchor="middle" fill="currentColor" stroke="none" font-size="15" font-weight="700" font-family="ui-monospace, monospace">main</text>
+  <text x="420" y="294" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">Published</text>
+  <text x="420" y="442" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">deploys to production</text>
+  <text x="420" y="460" text-anchor="middle" fill="currentColor" stroke="none" font-size="13">earlier versions archived</text>
+  <g transform="translate(-257 249)">
   <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
   <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
   <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
@@ -81,12 +86,10 @@ runs a release someone checked, tagged so you can roll back to it.
   <line class="text-accent" x1="610" y1="150" x2="682" y2="150" stroke-width="3"/>
   <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
   <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
-  <text x="716" y="152" text-anchor="middle" fill="currentColor" stroke="none" font-size="10">archive</text>
-  <text x="675" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys to production</text>
-  <text x="675" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">earlier versions archived</text>
+  <text x="716" y="152" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">archive</text>
   </g>
-  <path d="M715 222 L715 246 L270 246 L270 226" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
-  <text x="492" y="268" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">merge-back: the next release starts from what production runs</text>
+  <path d="M420 472 L420 482 L530 482 L530 115 L482 115" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
+  <text x="530" y="502" text-anchor="end" fill="currentColor" stroke="none" font-size="13">merge-back: the next release starts from what production runs</text>
 </svg>
 
 <svg viewBox="0 0 340 692" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
