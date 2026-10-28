@@ -4,6 +4,11 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+### Changed
+
+- `/docs/developer/releasing` opens with why the flow exists (test your own work first, ask reviewers once a release) and a diagram of it, and adds "Before it merges", "Keep each PR removable" and "Where this is heading".
+- The PR template asks for "Depends on", "What the specs can't show" as steps a reviewer can repeat on staging, and a removable-from-a-release check.
+
 ## v2026.10.27
 
 ### Added

@@ -1,22 +1,112 @@
 ---
 title: Releasing
-description: Cut a release candidate, review it on staging, ship it to production, and keep next in step
-keywords: release candidate staging production hotfix revert tag next main merge-back
+description: Test your own work first, review a release together on staging, ship it to production as a tagged version, and keep next in step
+keywords: release candidate staging production hotfix revert tag next main merge-back review attention removable depends
 ---
 
 # Releasing
 
-A change takes one path: a PR into `next`, a release branch cut from `next`
-and reviewed on staging, then a PR from that branch into `main`, which is
-production. [Forking](forking#protect-the-branches) sets up the branch rules
-with `bin/branch-rules`, and [Deployment](deployment#5-deploy-from-ci) switches
-on the deploys.
+This flow is built around attention. You test your own work as thoroughly as
+you like before anyone else spends time on it. Reviewers aren't pinged by
+every PR; they're asked once per release, when the PRs are running together
+on staging and a person's judgment is what's needed. Production only ever
+runs a release someone checked, tagged so you can roll back to it.
 
-| Branch | Deploys to | Takes changes from |
-| --- | --- | --- |
-| `next` | nowhere | feature PRs |
-| `release/<date>` | staging | its cut from `next`, then fix and revert PRs |
-| `main` | production | release and hotfix PRs |
+<svg viewBox="0 0 800 280" width="100%" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
+    </marker>
+  </defs>
+  <text x="80" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The draft</text>
+  <text x="80" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">your branch</text>
+  <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
+  <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
+  <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
+  <text x="50" y="84" fill="currentColor" stroke="none" font-size="10" font-family="ui-monospace, monospace">#1487</text>
+  <line x1="50" y1="98" x2="108" y2="98" stroke-width="1" opacity="0.5"/>
+  <line x1="50" y1="110" x2="100" y2="110" stroke-width="1" opacity="0.5"/>
+  <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
+  <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="80" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">your machine</text>
+  <text x="80" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked by you</text>
+  <line class="text-accent" x1="144" y1="112" x2="206" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="176" y="102" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">merge</text>
+  <text x="270" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The pile</text>
+  <text x="270" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">next</text>
+  <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
+  <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
+  <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
+  <rect x="220" y="124" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 132)"/>
+  <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
+  <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="270" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys nowhere</text>
+  <text x="270" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked by CI, one at a time</text>
+  <line class="text-accent" x1="330" y1="112" x2="406" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="368" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
+  <text x="368" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">cut</text>
+  <g transform="translate(20 0)">
+  <text x="465" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The book</text>
+  <text x="465" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
+  <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
+  <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="100" x2="444" y2="100" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="112" x2="444" y2="112" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="124" x2="444" y2="124" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="136" x2="444" y2="136" stroke-width="1" opacity="0.5"/>
+  <path class="text-accent" d="M448 87 L450 90 L455 84 M448 99 L450 102 L455 96 M448 111 L450 114 L455 108" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="476" y1="88" x2="520" y2="88" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="100" x2="516" y2="100" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="112" x2="520" y2="112" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="124" x2="508" y2="124" stroke-width="1" opacity="0.5"/>
+  <rect class="text-accent" x="531" y="78" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="93" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="108" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <text x="465" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys to staging</text>
+  <text x="465" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked together</text>
+  </g>
+  <line class="text-accent" x1="566" y1="112" x2="642" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
+  <text x="604" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
+  <text x="604" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">ship</text>
+  <g transform="translate(40 0)">
+  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The shelf</text>
+  <text x="675" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">main</text>
+  <rect x="616" y="96" width="18" height="70" rx="1.5" stroke-width="1.25"/>
+  <rect x="638" y="86" width="20" height="80" rx="1.5" stroke-width="1.25"/>
+  <rect x="662" y="92" width="18" height="74" rx="1.5" stroke-width="1.25"/>
+  <rect x="684" y="82" width="20" height="84" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="708" y="70" width="26" height="96" rx="1.5" fill="currentColor" stroke="none" opacity="0.3"/>
+  <rect class="text-accent" x="708" y="70" width="26" height="96" rx="1.5" stroke-width="2"/>
+  <line class="text-accent" x1="610" y1="167" x2="740" y2="167" stroke-width="3"/>
+  <text x="675" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys to production</text>
+  <text x="675" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">tagged, to roll back to</text>
+  </g>
+  <path d="M715 222 L715 246 L270 246 L270 226" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
+  <text x="492" y="268" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">merge-back: the next release starts from what production runs</text>
+</svg>
+
+Every PR is a story. On your branch it's a draft only you have read. Merged
+into `next`, it joins a pile of stories that CI checked one at a time.
+`bin/release cut` binds the pile into a book on staging, where people read
+the stories together for the first time, and `bin/release ship` puts the
+book on the shelf. [Forking](forking#protect-the-branches) sets up the branch
+rules with `bin/branch-rules`, and [Deployment](deployment#5-deploy-from-ci)
+switches on the deploys.
+
+| Branch | Deploys to | Checked by | Takes changes from |
+| --- | --- | --- | --- |
+| your PR's branch | your machine | you, or the agent writing it | your commits |
+| `next` | nowhere | CI on every PR, plus a reviewer's approval on a team | feature PRs |
+| `release/<name>` | staging | reviewers, working through each PR's notes | its cut from `next`, then fix and revert PRs |
+| `main` | production | nothing new: it runs the commit staging ran | release and hotfix PRs |
+
+Working alone, the flow is the same with fewer people in it. `bin/branch-rules
+--solo` drops the required approval, staging is optional (leave
+`DEPLOY_STAGING` unset), and each release still gets its changelog section,
+its tag and a commit to roll back to.
 
 `bin/release` runs each step. Every command takes `--dry-run`.
 
@@ -26,6 +116,46 @@ on the deploys.
 | Cut the candidate | `bin/release cut` |
 | Ship the reviewed commit | `bin/release ship <PR> <commit>` |
 | Merge `main` back after a hotfix | `bin/release merge-back` |
+
+## Before it merges
+
+Test your own work before you ask for anyone else's time. The specs cover
+what they can, and CI runs them on every PR. What they can't cover is how a
+change looks, reads and feels, so run your branch with `bin/dev` and click
+through it. The onboarding flow you just built is easiest to judge now, while
+it's the only thing that changed, not on staging next to someone else's
+sign-in rewrite.
+
+The PR template asks for two things the release depends on:
+
+- **What the specs can't show.** The checks you made by hand, written as
+  numbered steps someone else can repeat: where to go, what to do, what to
+  expect. A reviewer works through them on staging, and an agent with a
+  browser can follow them as written. If a step could be a system spec,
+  write the spec instead: it then runs on every PR without anyone's time.
+- **Depends on.** Any unreleased PR this one needs, so both stay in a release
+  or come out of it together.
+
+An agent writing a PR takes the same path: run the suite, run the app, walk
+the steps, then write them into the PR. Steps a person can follow are steps an
+agent can follow, and the other way round, so write them once for both.
+
+### Keep each PR removable
+
+A PR may have to come out of a release ([Partial
+approval](#partial-approval)). That's cheap only when it comes out cleanly:
+
+1. It needs no other unreleased PR, or it names that PR under "Depends on".
+2. Its migrations only add. Add the new column here, stop reading the old one,
+   and drop it in a later release. A reverted PR's migration has already run
+   on staging, and an added column left behind breaks nothing.
+3. Its backfills and one-off jobs are safe to run twice. A backfill can run on
+   staging, come out with its PR, and run again when the PR comes back.
+
+None of this needs tooling of its own, and the template ships none. A fork
+that wants it enforced can add strong_migrations (it refuses destructive
+migrations), maintenance_tasks (resumable backfills) or a feature flag gem such
+as Flipper, which switches a PR's feature off instead of reverting it.
 
 ## Prepare the changelog
 
@@ -70,9 +200,11 @@ a release that already shipped, too.
 
 ## Review on staging
 
-Review on staging, not on the PR's diff. A fix for something found in review
-goes into the release branch by PR, and staging redeploys. A fix that `next`
-also needs reaches it through the merge-back.
+Review on staging, not on the PR's diff. The release PR's Commits tab names
+every PR in the release; work through each one's "What the specs can't show"
+steps. A fix for
+something found in review goes into the release branch by PR, and staging
+redeploys. A fix that `next` also needs reaches it through the merge-back.
 
 When review approves, record the commit staging is running in the PR's
 "Commit reviewed on staging" field. The repository's Environments page shows
@@ -181,12 +313,32 @@ Rerunning `bin/branch-rules` puts back every ruleset exactly as
 after any hotfix. A ruleset left disabled is the risk here, so rerun the
 script in the same sitting as the push.
 
+## Where this is heading
+
+The release round spends reviewers' time, so the aim is to need it less. A
+problem a reviewer finds by hand that a spec could have caught becomes a spec,
+and the "What the specs can't show" lists get shorter. Once most releases pass
+staging untouched, a fork can loosen the flow a step at a time:
+
+1. Ask for an approval only on PRs that touch risky paths, such as sign-in,
+   authorization, tenancy and migrations. List them in a `CODEOWNERS` file,
+   set `require_code_owner_review` to `true` in `config/github/rulesets/`,
+   and drop `required_approving_review_count` to `0`.
+2. Skip staging for releases that touch none of those paths.
+3. Run `cut` and `ship` from CI after every green merge into `next`.
+
+The last step is where [Impatient
+Programming](https://impatientprogramming.org/rules/#rule-27) points: green
+merges itself. The tags, the changelog and rollback by commit stay the same at
+every step.
+
 ## Changing the flow
 
 The flow is a default, not a requirement. The branch rules live in
 `config/github/rulesets/`, the deploys in `.github/workflows/deploy.yml`, the
-steps in `bin/release`, and this page and the release template in
-`.github/PULL_REQUEST_TEMPLATE/release.md` describe them. Change all of them
+steps in `bin/release`, and this page, the release template in
+`.github/PULL_REQUEST_TEMPLATE/release.md` and the PR template in
+`.github/PULL_REQUEST_TEMPLATE.md` describe them. Change all of them
 together.
 
 The changelog and release-name convention is separate from the flow. It lives
