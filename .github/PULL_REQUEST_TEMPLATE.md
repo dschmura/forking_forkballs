@@ -19,8 +19,8 @@ Depends on: <!-- unreleased PRs this one needs, e.g. #123, so they leave a relea
 
 ## Checklist
 
+- [ ] Changelog: one line under `## [Unreleased]` in `CHANGELOG.md` saying what changed for someone using the app
 - [ ] Removable from a release: no unreleased dependency beyond "Depends on", migrations only add, backfills are safe to run twice (`/docs/developer/releasing`)
-
 - [ ] All user-facing text uses I18n locale keys (no hardcoded strings)
 - [ ] Controllers enforce Pundit authorization where the action is policy-scoped
 - [ ] RESTful routes only (no custom aliases, no single-action sub-resource controllers)

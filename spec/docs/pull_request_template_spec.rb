@@ -8,14 +8,24 @@ RSpec.describe "the pull request template" do
     expect(template).to include("Depends on")
   end
 
-  it "asks for what the specs can't show, written as steps a reviewer can follow on staging" do
+  it "asks for what the specs can't show" do
     expect(template).to include("## What the specs can't show")
     expect(guide).to include("What the specs can't show")
   end
 
+  it "asks for the PR's changelog line under [Unreleased]" do
+    expect(template).to include("`## [Unreleased]`")
+  end
+
   it "asks the author to keep the PR removable from a release" do
     expect(template).to match(/removable/i)
-    expect(guide).to include("## Keep each PR removable")
+    expect(guide).to include("### Keep each PR removable")
+  end
+
+  it "keeps the checklist in one list" do
+    checklist = template[/^## Checklist\n\n(.*?)(?=\n## )/m, 1]
+
+    expect(checklist.strip).not_to include("\n\n")
   end
 
   it "keeps the guide asking for one story per PR, so each is easy to check and to pull out" do
