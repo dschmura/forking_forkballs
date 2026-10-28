@@ -17,4 +17,8 @@ RSpec.describe "the pull request template" do
     expect(template).to match(/removable/i)
     expect(guide).to include("## Keep each PR removable")
   end
+
+  it "keeps the guide asking for one story per PR, so each is easy to check and to pull out" do
+    expect(guide).to include("**One story per PR.**")
+  end
 end

@@ -142,6 +142,13 @@ agent can follow, and the other way round, so write them once for both.
 
 ### Keep each PR removable
 
+> **One story per PR.** A PR is easiest to check, to review and to pull out
+> when it does one thing. Keep a refactor apart from the behavior change it
+> makes easy, and send it first. Leave the drive-by fix you noticed on the way
+> for its own PR. When a PR turns out to hold two stories, split it before
+> anyone reviews it. An agent widens a PR as it works unless asked not to, so
+> ask it for the one change and read its diff for anything else.
+
 A PR may have to come out of a release ([Partial
 approval](#partial-approval)). That's cheap only when it comes out cleanly:
 
