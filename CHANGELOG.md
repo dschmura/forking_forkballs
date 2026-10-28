@@ -9,6 +9,11 @@ All notable changes to ModelRails are documented here, organized by phase.
 - `/docs/developer/releasing` opens with why the flow exists (test your own work first, ask reviewers once a release) and a diagram of it, and adds "Before it merges", "Keep each PR removable" and "Where this is heading".
 - The PR template asks for "Depends on", "What the specs can't show" as steps a reviewer can repeat on staging, and a removable-from-a-release check.
 - `bin/release` says "Then:" for its next step and spells the ship command as `ship <PR> <commit reviewed on staging>`, the same as the release template and the guide.
+- The PR template asks for a changelog line under `[Unreleased]`.
+
+### Fixed
+
+- `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.
 
 ## v2026.10.27
 

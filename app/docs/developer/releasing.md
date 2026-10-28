@@ -7,12 +7,13 @@ keywords: release candidate staging production hotfix revert tag next main merge
 # Releasing
 
 This flow is built around attention. You test your own work as thoroughly as
-you like before anyone else spends time on it. Reviewers aren't pinged by
-every PR; they're asked once per release, when the PRs are running together
-on staging and a person's judgment is what's needed. Production only ever
-runs a release someone checked, tagged so you can roll back to it.
+you like before anyone else spends time on it. On a team, a reviewer
+approves each PR's code before it merges; how the PRs behave together is
+judged once per release, on staging, where a person's judgment is what's
+needed. Production runs a release someone checked, tagged so you can roll back
+to it, or a hotfix that couldn't wait for one.
 
-<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with Try it steps, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with its hand checks written in the PR, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -67,7 +68,7 @@ runs a release someone checked, tagged so you can roll back to it.
     <text x="52" y="114">1  Name your workspace</text>
     <text x="52" y="132">2  Invite your team</text>
     <text x="52" y="150">3  Pick a plan</text>
-    <text class="text-accent" x="52" y="177">Try it: steps in the PR</text>
+    <text class="text-accent" x="52" y="177">Hand checks in the PR</text>
     <text x="125" y="214" text-anchor="middle">on your machine</text>
     <text x="125" y="232" text-anchor="middle">checked by you</text>
     <text class="text-info" x="324" y="24" font-size="15" font-weight="700" font-family="ui-monospace, monospace">next</text>
@@ -88,7 +89,7 @@ runs a release someone checked, tagged so you can roll back to it.
     <text x="130" y="360">page 3</text>
     <text class="text-warning" x="130" y="380" font-family="ui-monospace, monospace">#1487</text>
     <text x="130" y="398" font-weight="700">Onboarding</text>
-    <text x="130" y="422">Try it steps</text>
+    <text x="130" y="422">Hand checks</text>
     <text class="text-warning" x="149" y="442">passed</text>
     <text x="125" y="504" text-anchor="middle">deploys to staging</text>
     <text x="125" y="522" text-anchor="middle">checked together</text>
@@ -96,7 +97,7 @@ runs a release someone checked, tagged so you can roll back to it.
     <text x="546" y="314" text-anchor="end">Published</text>
     <text class="text-success" x="421" y="341" text-anchor="middle" font-weight="700" font-family="ui-monospace, monospace" transform="rotate(4 421 336)">LIVE</text>
     <text x="338" y="368" font-family="ui-monospace, monospace">v2026.10.27</text>
-    <text x="338" y="458">6 stories</text>
+    <text x="338" y="458">4 stories</text>
     <text x="462" y="389" font-family="ui-monospace, monospace">v2026.10.20</text>
     <text x="458" y="415" font-family="ui-monospace, monospace">v2026.10.13</text>
     <text x="502" y="452" text-anchor="middle">archive</text>
@@ -201,7 +202,8 @@ runs a release someone checked, tagged so you can roll back to it.
   </g>
 </svg>
 
-Every PR is a story. On your branch it's a draft only you have read. Merged
+Every PR is a story. On your branch it's a draft only you have read (the
+book kind, not a GitHub draft PR). Merged
 into `next`, it joins a pile of stories that CI checked one at a time.
 `bin/release cut` binds the pile into a book on staging, where people read
 the stories together for the first time, and `bin/release ship` publishes
@@ -214,8 +216,8 @@ switches on the deploys.
 | --- | --- | --- | --- |
 | your PR's branch | your machine | you, or the agent writing it | your commits |
 | `next` | nowhere | CI on every PR, plus a reviewer's approval on a team | feature PRs |
-| `release/<name>` | staging | reviewers, working through each PR's notes | its cut from `next`, then fix and revert PRs |
-| `main` | production | nothing new: it runs the commit staging ran | release and hotfix PRs |
+| `release/<name>` | staging | reviewers, working through each PR's notes | its cut from `next`, then fix, revert and hotfix PRs |
+| `main` | production | nothing new: it runs the commit staging ran, or a hotfix | release and hotfix PRs |
 
 Working alone, the flow is the same with fewer people in it. `bin/branch-rules
 --solo` drops the required approval, staging is optional (leave
@@ -227,7 +229,7 @@ its tag and a commit to roll back to.
 | Step | Command |
 | --- | --- |
 | Name the release in the changelog | `bin/release prepare` |
-| Cut the candidate | `bin/release cut` |
+| Cut a release | `bin/release cut` |
 | Ship the reviewed commit | `bin/release ship <PR> <commit reviewed on staging>` |
 | Merge `main` back after a hotfix | `bin/release merge-back` |
 
@@ -240,7 +242,7 @@ through it. The onboarding flow you just built is easiest to judge now, while
 it's the only thing that changed, not on staging next to someone else's
 sign-in rewrite.
 
-The PR template asks for two things the release depends on:
+The PR template asks for three things the release depends on:
 
 - **What the specs can't show.** The checks you made by hand, written as
   numbered steps someone else can repeat: where to go, what to do, what to
@@ -249,6 +251,9 @@ The PR template asks for two things the release depends on:
   write the spec instead: it then runs on every PR without anyone's time.
 - **Depends on.** Any unreleased PR this one needs, so both stay in a release
   or come out of it together.
+- **A changelog line.** One line under `## [Unreleased]` in `CHANGELOG.md`,
+  saying what changed for someone using the app. `prepare` turns those lines
+  into the release's notes, and refuses a release that has none.
 
 An agent writing a PR takes the same path: run the suite, run the app, walk
 the steps, then write them into the PR. Steps a person can follow are steps an
@@ -263,8 +268,8 @@ agent can follow, and the other way round, so write them once for both.
 > anyone reviews it. An agent widens a PR as it works unless asked not to, so
 > ask it for the one change and read its diff for anything else.
 
-A PR may have to come out of a release ([Partial
-approval](#partial-approval)). That's cheap only when it comes out cleanly:
+A PR may have to come out of a release ([Hold back a
+PR](#hold-back-a-pr)). That's cheap only when it comes out cleanly:
 
 1. It needs no other unreleased PR, or it names that PR under "Depends on".
 2. Its migrations only add. Add the new column here, stop reading the old one,
@@ -308,7 +313,9 @@ second one starts after the first has shipped.
 bin/release cut
 ```
 
-Run it once the changelog PR has merged. It pushes `next` as
+Run it right after the changelog PR merges. `cut` takes `next` as it is
+when you run it, so a PR merged in between ships in this release without a
+line in "What ships", and is listed again in the next one. It pushes `next` as
 `release/<name>`, which deploys to staging, and opens the release PR into
 `main` from the release template. The PR body names the branch, and its "What
 ships" section is that release's changelog section.
@@ -343,7 +350,7 @@ On a repository whose rules require an approval, someone other than the
 author approves the release PR on GitHub before `ship`. That's separate from
 the stakeholders' sign-off on staging.
 
-### Partial approval
+### Hold back a PR
 
 When some of the changes aren't ready, revert them on the release branch, by
 PR, and ship the rest:
@@ -355,6 +362,9 @@ git revert -m 1 <the feature's merge commit>
 git push -u origin hold-back-search
 gh pr create --base release/2026.10.27 --title "Hold back search for this release"
 ```
+
+A squash-merged PR has no merge commit, so revert its squash commit instead:
+`git revert <its squash commit>`.
 
 List each held-back PR and its revert commit under "Held back".
 
@@ -392,7 +402,7 @@ reuses a merge-back branch and PR that are already open.
 bin/release merge-back
 ```
 
-It pushes a branch cut from `main` (`merge-back/<name>`, or
+It pushes a branch from `main` (`merge-back/<name>`, or
 `merge-back/main-<commit>` after a hotfix), opens its PR into `next`, brings
 it up to date, and turns on auto-merge with a merge commit. If GitHub can't
 bring it up to date, it says so. A PR whose
@@ -412,9 +422,13 @@ git switch -c hotfix/sign-in-loop origin/main
 gh pr create --base main --title "Sign-in no longer loops after a password reset"
 ```
 
-Merging it deploys production. Then run `bin/release merge-back`. If a release
-branch is open, bring the fix into it through a branch cut from `main` with a
-PR into `release/<name>`.
+Merging it deploys production. A hotfix ships untagged: put its changelog
+line under `## [Unreleased]`, and the next release lists it under that
+release's tag. Until then, rolling back to the last tag rolls back the hotfix
+too.
+
+Then run `bin/release merge-back`. If a release branch is open, bring the fix
+into it through a branch from `main` with a PR into `release/<name>`.
 
 ## In case of emergency
 
@@ -423,8 +437,8 @@ and the PR path can't carry the fix (CI itself is broken, say), an admin
 switches the blocking ruleset off, pushes, and switches it back on:
 
 ```bash
-gh api repos/OWNER/REPO/rulesets --jq '.[] | "\(.id) \(.name)"'
-gh api -X PUT repos/OWNER/REPO/rulesets/<id> -f enforcement=disabled
+gh api 'repos/{owner}/{repo}/rulesets' --jq '.[] | "\(.id) \(.name)"'
+gh api -X PUT 'repos/{owner}/{repo}/rulesets/<id>' -f enforcement=disabled
 git push origin hotfix/sign-in-loop:main
 bin/branch-rules   # add --solo if the repo runs solo; turns every ruleset back on
 ```
@@ -444,7 +458,9 @@ staging untouched, a fork can loosen the flow a step at a time:
 1. Ask for an approval only on PRs that touch risky paths, such as sign-in,
    authorization, tenancy and migrations. List them in a `CODEOWNERS` file,
    set `require_code_owner_review` to `true` in `config/github/rulesets/`,
-   and drop `required_approving_review_count` to `0`.
+   and drop `required_approving_review_count` to `0`. That combination isn't
+   tested here: confirm on a scratch repository that GitHub still asks for the
+   code owner's approval before you rely on it.
 2. Skip staging for releases that touch none of those paths.
 3. Run `cut` and `ship` from CI after every green merge into `next`.
 
