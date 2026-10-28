@@ -296,7 +296,8 @@ subsections into one each. It then starts a fresh, empty `[Unreleased]`
 above it, drops subsections with no entries, and turns on auto-merge, so the
 PR lands once its checks pass and any approval the rules require is given. It
 commits through a temporary index, so your checkout is never touched. It
-refuses while a release it named earlier hasn't shipped yet.
+refuses while a release it named earlier hasn't shipped yet. A fork can have
+it run itself once staging is free ([When a release starts](#when-a-release-starts)).
 
 The rename happens on `next`, before the cut, so that work merged during
 review lands under the new `[Unreleased]`. Renaming on the release branch
@@ -421,6 +422,31 @@ the PR merges, press Update branch. Keep it **a merge commit**: a squash or
 rebase leaves `main` out of `next`'s history, so every later release PR shows
 changes `main` already has, and can conflict on them.
 
+## When a release starts
+
+By hand, a release starts when someone runs `bin/release prepare`. A fork can
+have it start whenever staging is free instead. Set the `AUTO_RELEASE`
+repository variable to `true` and add a `RELEASE_TOKEN` secret, and
+`.github/workflows/next_release.yml` takes the first two steps itself:
+
+1. When a release's merge-back PR merges into `next`, it runs `bin/release
+   prepare --skip-if-empty`. The next release then holds everything that
+   merged while the last one was on staging. With nothing under
+   `[Unreleased]` it starts nothing, and the next release waits for someone
+   to run `prepare`.
+2. When that changelog PR merges, it runs `bin/release cut`, which deploys the
+   release to staging and opens its PR.
+
+Reviewers hear about it once, from the release PR. Shipping stays a person's
+call: `bin/release ship` still takes the commit someone reviewed on staging. A
+hotfix's merge-back starts nothing.
+
+The workflow needs its own token because GitHub runs no workflows on pull
+requests opened with a workflow's built-in token, so the changelog PR's checks
+would never start and it would never merge. A fine-grained token for this
+repository with Contents and Pull requests set to read and write is enough;
+add Workflows if GitHub refuses a push that carries workflow changes.
+
 ## Hotfix
 
 A fix production can't wait a release for goes straight to `main`:
@@ -482,6 +508,7 @@ every step.
 
 The flow is a default, not a requirement. The branch rules live in
 `config/github/rulesets/`, the deploys in `.github/workflows/deploy.yml`, the
+automatic start in `.github/workflows/next_release.yml`, the
 steps in `bin/release`, and this page, the release template in
 `.github/PULL_REQUEST_TEMPLATE/release.md` and the PR template in
 `.github/PULL_REQUEST_TEMPLATE.md` describe them. Change all of them
