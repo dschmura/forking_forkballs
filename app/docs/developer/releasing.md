@@ -357,12 +357,14 @@ PR, and ship the rest:
 
 ```bash
 git switch -c hold-back-search origin/release/2026.10.27
-git revert -m 1 <the feature's merge commit>   # merged with a merge commit
-git revert <its squash commit>                  # or squash-merged
+git revert -m 1 <the feature's merge commit>
 # also delete its line from the release's CHANGELOG.md section
 git push -u origin hold-back-search
 gh pr create --base release/2026.10.27 --title "Hold back search for this release"
 ```
+
+A squash-merged PR has no merge commit, so revert its squash commit instead:
+`git revert <its squash commit>`.
 
 List each held-back PR and its revert commit under "Held back".
 
