@@ -37,26 +37,37 @@ RSpec.describe "The releasing guide's flow diagram" do
     end
   end
 
-  it "heads each stop with its branch, with the book analogy beneath it" do
+  it "heads each stop with its branch, with the book analogy beside it" do
     svgs.each do |svg|
       headings = svg.css('text[font-weight="700"]').map(&:text)
 
       expect(headings).to include("your branch", "next", "release/<name>", "main")
+      expect(svg.css("text").map(&:text)).to include("The draft", "The pile", "The book", "Published")
       expect(headings).not_to include("The draft", "The pile", "The book", "Published")
     end
   end
 
+  it "calls the hand checks what the PR template calls them, never Try it" do
+    expect(source).not_to include("Try it")
+  end
+
   it "sets every word at 12px or more, the narrow version on a 360px phone and the wide one beside the docs sidebar" do
     { narrow => smallest_phone_width, wide => narrowest_column_with_sidebar }.each do |svg, width|
+      expect(svg.css("[transform]").map { |node| node["transform"] }).to all(satisfy { |transform| !transform.match?(/scale|matrix/) })
       scale = width / svg["viewBox"].split[2].to_f
 
       svg.css("text").each do |text|
-        group_scale = text.ancestors("g").map { |g| g["transform"].to_s[/scale\(([\d.]+)\)/, 1]&.to_f || 1 }.reduce(1, :*)
-        font_size = [ text, *text.ancestors ].find { |node| node.respond_to?(:[]) && node["font-size"] }["font-size"].to_f
-        rendered = font_size * group_scale * scale
+        font_size = text.ancestors.grep(Nokogiri::XML::Element).unshift(text).find { |node| node["font-size"] }&.[]("font-size") || 16
+        rendered = font_size.to_f * scale
         expect(rendered).to be >= 12, "#{text.text.inspect} renders at #{rendered.round(1)}px"
       end
     end
+  end
+
+  it "gives each version its own arrowhead, so the hidden one can't take the visible one's" do
+    markers = svgs.flat_map { |svg| svg.css("marker").map { |marker| marker["id"] } }
+
+    expect(markers.uniq.size).to eq(svgs.size)
   end
 
   it "survives the markdowndocs renderer with every stage drawn in each version" do
@@ -64,7 +75,6 @@ RSpec.describe "The releasing guide's flow diagram" do
     drawn = rendered.css("svg")
 
     expect(drawn.size).to eq(2)
-    expect(drawn.flat_map { |svg| svg.css("marker").map { |marker| marker["id"] } }.uniq.size).to eq(2)
     drawn.each do |svg|
       expect(svg.css("text").map(&:text)).to include("your branch", "next", "release/<name>", "main")
     end
