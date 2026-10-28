@@ -72,17 +72,18 @@ runs a release someone checked, tagged so you can roll back to it.
   <text x="604" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
   <text x="604" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">ship</text>
   <g transform="translate(40 0)">
-  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The shelf</text>
+  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">Published</text>
   <text x="675" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">main</text>
-  <rect x="616" y="96" width="18" height="70" rx="1.5" stroke-width="1.25"/>
-  <rect x="638" y="86" width="20" height="80" rx="1.5" stroke-width="1.25"/>
-  <rect x="662" y="92" width="18" height="74" rx="1.5" stroke-width="1.25"/>
-  <rect x="684" y="82" width="20" height="84" rx="1.5" stroke-width="1.25"/>
-  <rect class="text-accent" x="708" y="70" width="26" height="96" rx="1.5" fill="currentColor" stroke="none" opacity="0.3"/>
-  <rect class="text-accent" x="708" y="70" width="26" height="96" rx="1.5" stroke-width="2"/>
-  <line class="text-accent" x1="610" y1="167" x2="740" y2="167" stroke-width="3"/>
+  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
+  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
+  <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
+  <line class="text-accent" x1="628" y1="94" x2="654" y2="94" stroke-width="1.5"/>
+  <line class="text-accent" x1="610" y1="150" x2="682" y2="150" stroke-width="3"/>
+  <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
+  <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
+  <text x="716" y="152" text-anchor="middle" fill="currentColor" stroke="none" font-size="10">archive</text>
   <text x="675" y="192" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">deploys to production</text>
-  <text x="675" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">tagged, to roll back to</text>
+  <text x="675" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">earlier versions archived</text>
   </g>
   <path d="M715 222 L715 246 L270 246 L270 226" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
   <text x="492" y="268" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">merge-back: the next release starts from what production runs</text>
@@ -91,8 +92,9 @@ runs a release someone checked, tagged so you can roll back to it.
 Every PR is a story. On your branch it's a draft only you have read. Merged
 into `next`, it joins a pile of stories that CI checked one at a time.
 `bin/release cut` binds the pile into a book on staging, where people read
-the stories together for the first time, and `bin/release ship` puts the
-book on the shelf. [Forking](forking#protect-the-branches) sets up the branch
+the stories together for the first time, and `bin/release ship` publishes
+it. The version it replaces goes to the archive, tagged, ready to republish
+if you need to roll back. [Forking](forking#protect-the-branches) sets up the branch
 rules with `bin/branch-rules`, and [Deployment](deployment#5-deploy-from-ci)
 switches on the deploys.
 
