@@ -258,7 +258,7 @@ The template's default flow uses three branches:
 | Branch | Role |
 | --- | --- |
 | `next` | Integration, and the default branch: every feature PR targets it. Deploys nowhere. |
-| `release/<date>` | A candidate cut from `next`, deployed to staging for review. Fixes and reverts land on it by PR. |
+| `release/<name>` | A release, cut from `next` by `bin/release cut` and deployed to staging for review. Fixes and reverts land on it by PR. |
 | `main` | Production. Takes a release by PR, with merge commits only. |
 
 Once `main` is on GitHub, run:
