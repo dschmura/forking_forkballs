@@ -21,6 +21,15 @@ RSpec.describe "The releasing guide's flow diagram" do
     end
   end
 
+  it "heads each stop with its branch, with the book analogy beneath it" do
+    svgs.each do |svg|
+      headings = svg.css('text[font-weight="700"]').map(&:text)
+
+      expect(headings).to include("your branch", "next", "release/<name>", "main")
+      expect(headings).not_to include("The draft", "The pile", "The book", "Published")
+    end
+  end
+
   it "sets the narrow version's words at 12px or more on a 360px phone" do
     scale = smallest_phone_width / narrow["viewBox"].split[2].to_f
 

@@ -18,8 +18,8 @@ runs a release someone checked, tagged so you can roll back to it.
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
     </marker>
   </defs>
-  <text x="80" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The draft</text>
-  <text x="80" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">your branch</text>
+  <text x="80" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
+  <text x="80" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The draft</text>
   <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
   <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
   <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
@@ -32,8 +32,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <text x="80" y="208" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">checked by you</text>
   <line class="text-accent" x1="144" y1="112" x2="206" y2="112" stroke-width="2" marker-end="url(#arrow-release)"/>
   <text x="176" y="102" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">merge</text>
-  <text x="270" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The pile</text>
-  <text x="270" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">next</text>
+  <text x="270" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">next</text>
+  <text x="270" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The pile</text>
   <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
   <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
   <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
@@ -46,8 +46,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <text x="368" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
   <text x="368" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">cut</text>
   <g transform="translate(20 0)">
-  <text x="465" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">The book</text>
-  <text x="465" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="465" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="465" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">The book</text>
   <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
   <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
   <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
@@ -72,8 +72,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <text x="604" y="90" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-family="ui-monospace, monospace">bin/release</text>
   <text x="604" y="103" text-anchor="middle" fill="currentColor" stroke="none" font-size="10.5" font-weight="700" font-family="ui-monospace, monospace">ship</text>
   <g transform="translate(40 0)">
-  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700">Published</text>
-  <text x="675" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12" font-family="ui-monospace, monospace">main</text>
+  <text x="675" y="22" text-anchor="middle" fill="currentColor" stroke="none" font-size="14.5" font-weight="700" font-family="ui-monospace, monospace">main</text>
+  <text x="675" y="40" text-anchor="middle" fill="currentColor" stroke="none" font-size="12">Published</text>
   <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
   <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
   <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
@@ -104,8 +104,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
   <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="140" y="42" fill="currentColor" stroke="none" font-size="19" font-weight="700">The draft</text>
-  <text x="140" y="66" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">your branch</text>
+  <text x="140" y="42" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">your branch</text>
+  <text x="140" y="66" fill="currentColor" stroke="none" font-size="16">The draft</text>
   <text x="140" y="94" fill="currentColor" stroke="none" font-size="16">your machine</text>
   <text x="140" y="116" fill="currentColor" stroke="none" font-size="16">checked by you</text>
   <line class="text-accent" x1="68" y1="124" x2="68" y2="188" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
@@ -118,8 +118,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
   <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <text x="140" y="202" fill="currentColor" stroke="none" font-size="19" font-weight="700">The pile</text>
-  <text x="140" y="226" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">next</text>
+  <text x="140" y="202" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">next</text>
+  <text x="140" y="226" fill="currentColor" stroke="none" font-size="16">The pile</text>
   <text x="140" y="254" fill="currentColor" stroke="none" font-size="16">deploys nowhere</text>
   <text x="140" y="276" fill="currentColor" stroke="none" font-size="16">checked by CI,</text>
   <text x="140" y="298" fill="currentColor" stroke="none" font-size="16">one at a time</text>
@@ -144,8 +144,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
   <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
   </g>
-  <text x="140" y="362" fill="currentColor" stroke="none" font-size="19" font-weight="700">The book</text>
-  <text x="140" y="386" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="140" y="362" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="140" y="386" fill="currentColor" stroke="none" font-size="16">The book</text>
   <text x="140" y="414" fill="currentColor" stroke="none" font-size="16">deploys to staging</text>
   <text x="140" y="436" fill="currentColor" stroke="none" font-size="16">checked together</text>
   <line class="text-accent" x1="68" y1="440" x2="68" y2="508" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
@@ -159,8 +159,8 @@ runs a release someone checked, tagged so you can roll back to it.
   <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
   <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
   </g>
-  <text x="140" y="522" fill="currentColor" stroke="none" font-size="19" font-weight="700">Published</text>
-  <text x="140" y="546" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">main</text>
+  <text x="140" y="522" fill="currentColor" stroke="none" font-size="19" font-weight="700" font-family="ui-monospace, monospace">main</text>
+  <text x="140" y="546" fill="currentColor" stroke="none" font-size="16">Published</text>
   <text x="140" y="574" fill="currentColor" stroke="none" font-size="16">deploys to production</text>
   <text x="140" y="596" fill="currentColor" stroke="none" font-size="16">earlier versions</text>
   <text x="140" y="618" fill="currentColor" stroke="none" font-size="16">archived</text>
