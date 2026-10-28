@@ -12,7 +12,7 @@ every PR; they're asked once per release, when the PRs are running together
 on staging and a person's judgment is what's needed. Production only ever
 runs a release someone checked, tagged so you can roll back to it.
 
-<svg viewBox="0 0 800 280" width="100%" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 800 280" width="100%" class="hidden md:block" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -87,6 +87,86 @@ runs a release someone checked, tagged so you can roll back to it.
   </g>
   <path d="M715 222 L715 246 L270 246 L270 226" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release)"/>
   <text x="492" y="268" text-anchor="middle" fill="currentColor" stroke="none" font-size="11">merge-back: the next release starts from what production runs</text>
+</svg>
+
+<svg viewBox="0 0 340 692" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow. You check a PR yourself on your branch, on your own machine. It merges into next, which deploys nowhere and collects PRs that CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, which deploys to staging, where reviewers check the PRs together. bin/release ship merges it into main, which deploys to production as a tagged release. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+  <defs>
+    <marker id="arrow-release-narrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
+    </marker>
+  </defs>
+  <g transform="translate(8 -9.75) scale(0.75)">
+  <rect x="35" y="56" width="90" height="112" rx="6" stroke-width="1.5"/>
+  <rect x="62" y="50" width="36" height="12" rx="3" stroke-width="1.5"/>
+  <rect x="43" y="68" width="74" height="92" rx="1" stroke-width="1"/>
+  <line x1="50" y1="98" x2="108" y2="98" stroke-width="1" opacity="0.5"/>
+  <line x1="50" y1="110" x2="100" y2="110" stroke-width="1" opacity="0.5"/>
+  <line x1="50" y1="122" x2="92" y2="122" stroke-width="1" opacity="0.5"/>
+  <path class="text-accent" d="M52 140 L58 146 L70 132" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="140" y="42" fill="currentColor" stroke="none" font-size="19" font-weight="700">The draft</text>
+  <text x="140" y="66" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">your branch</text>
+  <text x="140" y="94" fill="currentColor" stroke="none" font-size="16">your machine</text>
+  <text x="140" y="116" fill="currentColor" stroke="none" font-size="16">checked by you</text>
+  <line class="text-accent" x1="68" y1="124" x2="68" y2="188" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <text x="84" y="162" fill="currentColor" stroke="none" font-size="16">merge</text>
+  <g transform="translate(-134.5 148) scale(0.75)">
+  <rect x="220" y="64" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 72)"/>
+  <rect x="220" y="84" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 92)"/>
+  <rect x="220" y="104" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 112)"/>
+  <rect x="220" y="124" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(1 270 132)"/>
+  <rect x="220" y="144" width="100" height="16" rx="1" stroke-width="1.25" transform="rotate(-1 270 152)"/>
+  <path class="text-accent" d="M300 72 L303 75 L309 68 M300 92 L303 95 L309 88 M300 112 L303 115 L309 108 M300 132 L303 135 L309 128 M300 152 L303 155 L309 148" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="140" y="202" fill="currentColor" stroke="none" font-size="19" font-weight="700">The pile</text>
+  <text x="140" y="226" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">next</text>
+  <text x="140" y="254" fill="currentColor" stroke="none" font-size="16">deploys nowhere</text>
+  <text x="140" y="276" fill="currentColor" stroke="none" font-size="16">checked by CI,</text>
+  <text x="140" y="298" fill="currentColor" stroke="none" font-size="16">one at a time</text>
+  <line class="text-accent" x1="68" y1="280" x2="68" y2="348" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <text x="84" y="322" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">cut</tspan></text>
+  <g transform="translate(-283.75 308) scale(0.75)">
+  <path d="M400 70 Q432 62 465 72 L465 162 Q432 152 400 160 Z" stroke-width="1.5"/>
+  <path d="M465 72 Q498 62 530 70 L530 160 Q498 152 465 162 Z" stroke-width="1.5"/>
+  <line x1="410" y1="88" x2="444" y2="88" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="100" x2="444" y2="100" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="112" x2="444" y2="112" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="124" x2="444" y2="124" stroke-width="1" opacity="0.5"/>
+  <line x1="410" y1="136" x2="444" y2="136" stroke-width="1" opacity="0.5"/>
+  <path class="text-accent" d="M448 87 L450 90 L455 84 M448 99 L450 102 L455 96 M448 111 L450 114 L455 108" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="476" y1="88" x2="520" y2="88" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="100" x2="516" y2="100" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="112" x2="520" y2="112" stroke-width="1" opacity="0.5"/>
+  <line x1="476" y1="124" x2="508" y2="124" stroke-width="1" opacity="0.5"/>
+  <rect class="text-accent" x="531" y="78" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="93" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="108" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="123" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  <rect class="text-accent" x="531" y="138" width="7" height="11" rx="1.5" stroke-width="1.25"/>
+  </g>
+  <text x="140" y="362" fill="currentColor" stroke="none" font-size="19" font-weight="700">The book</text>
+  <text x="140" y="386" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
+  <text x="140" y="414" fill="currentColor" stroke="none" font-size="16">deploys to staging</text>
+  <text x="140" y="436" fill="currentColor" stroke="none" font-size="16">checked together</text>
+  <line class="text-accent" x1="68" y1="440" x2="68" y2="508" stroke-width="2" marker-end="url(#arrow-release-narrow)"/>
+  <text x="84" y="478" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">bin/release <tspan font-weight="700">ship</tspan></text>
+  <g transform="translate(-439.75 465) scale(0.75)">
+  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" fill="currentColor" stroke="none" opacity="0.3"/>
+  <rect class="text-accent" x="618" y="66" width="56" height="80" rx="2" stroke-width="2"/>
+  <line class="text-accent" x1="628" y1="84" x2="664" y2="84" stroke-width="2"/>
+  <line class="text-accent" x1="628" y1="94" x2="654" y2="94" stroke-width="1.5"/>
+  <line class="text-accent" x1="610" y1="150" x2="682" y2="150" stroke-width="3"/>
+  <path d="M692 128 L692 96 L740 96 L740 128 M697 128 L697 106 L735 106 L735 128 M702 128 L702 116 L730 116 L730 128" stroke-width="1"/>
+  <rect x="688" y="128" width="56" height="38" rx="2" stroke-width="1.5"/>
+  </g>
+  <text x="140" y="522" fill="currentColor" stroke="none" font-size="19" font-weight="700">Published</text>
+  <text x="140" y="546" fill="currentColor" stroke="none" font-size="16" font-family="ui-monospace, monospace">main</text>
+  <text x="140" y="574" fill="currentColor" stroke="none" font-size="16">deploys to production</text>
+  <text x="140" y="596" fill="currentColor" stroke="none" font-size="16">earlier versions</text>
+  <text x="140" y="618" fill="currentColor" stroke="none" font-size="16">archived</text>
+  <path d="M16 545 L6 545 L6 232 L26 232" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#arrow-release-narrow)"/>
+  <text x="6" y="646" fill="currentColor" stroke="none" font-size="16">merge-back: the next release</text>
+  <text x="6" y="668" fill="currentColor" stroke="none" font-size="16">starts from what production runs</text>
 </svg>
 
 Every PR is a story. On your branch it's a draft only you have read. Merged
