@@ -13,7 +13,7 @@ judged once per release, on staging, where a person's judgment is what's
 needed. Production runs a release someone checked, tagged so you can roll back
 to it, or a hotfix that couldn't wait for one.
 
-<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with its hand checks written in the PR, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with its hand checks written in the PR, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checks again after every merge. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -78,7 +78,7 @@ to it, or a hotfix that couldn't wait for one.
     <text x="340" y="122" font-weight="700"><tspan font-family="ui-monospace, monospace">#1487</tspan> New onboarding</text>
     <text x="340" y="152"><tspan font-family="ui-monospace, monospace">#1488</tspan> Search</text>
     <text x="435" y="214" text-anchor="middle">deploys nowhere</text>
-    <text x="435" y="232" text-anchor="middle">checked by CI, one at a time</text>
+    <text x="435" y="232" text-anchor="middle">checked by CI after every merge</text>
     <text class="text-warning" x="14" y="314" font-size="15" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
     <text x="236" y="314" text-anchor="end">The book</text>
     <text x="24" y="360" font-weight="700">Contents</text>
@@ -111,7 +111,7 @@ to it, or a hotfix that couldn't wait for one.
   </g>
 </svg>
 
-<svg viewBox="0 0 340 816" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow, top to bottom. Your branch, the draft, checked by you on your own machine. It merges into next, the pile, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, the book, checked together on staging. bin/release ship publishes it on main, in production, and earlier versions are archived. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 340 816" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow, top to bottom. Your branch, the draft, checked by you on your own machine. It merges into next, the pile, which deploys nowhere and which CI checks again after every merge. bin/release cut binds next into release/&lt;name&gt;, the book, checked together on staging. bin/release ship publishes it on main, in production, and earlier versions are archived. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release-narrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -184,7 +184,7 @@ to it, or a hotfix that couldn't wait for one.
     <text x="306" y="228" text-anchor="end">The pile</text>
     <text x="120" y="280">deploys nowhere</text>
     <text x="120" y="300">checked by CI,</text>
-    <text x="120" y="320">one at a time</text>
+    <text x="120" y="320">after every merge</text>
     <text class="text-warning" x="14" y="428" font-size="18" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
     <text x="306" y="428" text-anchor="end">The book</text>
     <text x="120" y="480">deploys to staging</text>
@@ -204,7 +204,7 @@ to it, or a hotfix that couldn't wait for one.
 
 Every PR is a story. On your branch it's a draft only you have read (the
 book kind, not a GitHub draft PR). Merged
-into `next`, it joins a pile of stories that CI checked one at a time.
+into `next`, it joins a pile of stories that CI checks again, all together, after every merge.
 `bin/release cut` binds the pile into a book on staging, where people read
 the stories together for the first time, and `bin/release ship` publishes
 it. The version it replaces goes to the archive, tagged, ready to republish
@@ -215,7 +215,7 @@ switches on the deploys.
 | Branch | Deploys to | Checked by | Takes changes from |
 | --- | --- | --- | --- |
 | your PR's branch | your machine | you, or the agent writing it | your commits |
-| `next` | nowhere | CI on every PR, plus a reviewer's approval on a team | feature PRs |
+| `next` | nowhere | CI on every PR and again after every merge, plus a reviewer's approval on a team | feature PRs |
 | `release/<name>` | staging | reviewers, working through each PR's notes | its cut from `next`, then fix, revert and hotfix PRs |
 | `main` | production | nothing new: it runs the commit staging ran, or a hotfix | release and hotfix PRs |
 

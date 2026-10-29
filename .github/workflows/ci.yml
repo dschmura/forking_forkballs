@@ -3,14 +3,12 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [ next, main ]
 
-# A new push to a PR branch supersedes the in-flight run instead of letting a
-# stale ~8-min run finish (freeing runners + faster feedback). head_ref groups
-# a PR's runs; ref covers push events. cancel-in-progress is gated to PRs so
-# every push to main completes for the historical record.
+# A newer push to a PR supersedes its run; each push to next or main gets its own group,
+# since a shared one would cancel a queued run and leave that merge unchecked.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Least-privilege default for every job: nothing here pushes, uploads SARIF,
