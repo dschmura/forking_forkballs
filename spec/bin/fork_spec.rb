@@ -411,6 +411,19 @@ RSpec.describe ForkFlow do
       expect(capture_git("remote", "get-url", "origin")).to eq("git@github.com:me/my_app.git")
     end
 
+    it "makes the given origin gh's default, since gh would otherwise pick upstream: the template" do
+      run_fork(name: "my_app", origin: "git@github.com:me/my_app.git", yes: true)
+
+      expect(capture_git("config", "--get", "remote.origin.gh-resolved")).to eq("base")
+    end
+
+    it "makes an origin that was already there gh's default too" do
+      git("remote", "set-url", "origin", "git@github.com:me/my_app.git")
+      run_fork(name: "my_app", yes: true)
+
+      expect(capture_git("config", "--get", "remote.origin.gh-resolved")).to eq("base")
+    end
+
     # Anchoring matters: an unanchored pattern matches "me/not_modelrails_base",
     # which would disconnect a user's own repository.
     # A half-configured repo (someone followed the guide partway, or an earlier

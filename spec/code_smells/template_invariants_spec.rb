@@ -1543,6 +1543,11 @@ RSpec.describe "Template invariants" do
         "the template repo itself must never set the driver"
     end
 
+    it "makes origin gh's default from bin/setup, since gh would pick the upstream remote it adds" do
+      expect(File.read(Rails.root.join("bin/setup"))).to include("git config remote.origin.gh-resolved base"),
+        "a teammate's gh commands in a fork clone would act on the template"
+    end
+
     it "marks the fork extension point in db/seeds.rb" do
       expect(File.read(Rails.root.join("db/seeds.rb")))
         .to include("Fork seam: add your app's domain seeds BELOW this line"),
