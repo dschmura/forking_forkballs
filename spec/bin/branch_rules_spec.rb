@@ -32,12 +32,12 @@ RSpec.describe BranchRules do
     bin
   end
 
-  def run_rules(**opts)
+  def run_rules(root: Rails.root, **opts)
     bin = install_fake_gh
     original = ENV["PATH"]
     ENV["PATH"] = "#{bin}:#{original}"
     $stdout = StringIO.new
-    described_class.new({ repo: "me/app" }.merge(opts), root: Rails.root).run
+    described_class.new({ repo: "me/app" }.merge(opts), root: root).run
   ensure
     @output = $stdout.string
     $stdout = STDOUT
@@ -53,6 +53,30 @@ RSpec.describe BranchRules do
 
   def approvals(ruleset)
     ruleset["rules"].find { |r| r["type"] == "pull_request" }.dig("parameters", "required_approving_review_count")
+  end
+
+  describe "the repository it protects" do
+    let(:checkout) { workdir.join("checkout").tap(&:mkpath) }
+
+    def remote(name, url) = system(CleanGitEnv::HASH, "git", "-C", checkout.to_s, "remote", "add", name, url, exception: true)
+
+    before { system(CleanGitEnv::HASH, "git", "-C", checkout.to_s, "init", "-q", exception: true) }
+
+    it "is origin's, not upstream's, which gh would pick" do
+      remote("origin", "git@github.com:me/app.git")
+      remote("upstream", "git@github.com:me/template.git")
+      run_rules(repo: nil, root: checkout)
+
+      expect(@output).to include("== Branch rules for me/app")
+      expect(calls.join("\n")).not_to include("me/template")
+    end
+
+    it "stops without touching GitHub when origin isn't a GitHub repository" do
+      remote("upstream", "git@github.com:me/template.git")
+
+      expect { run_rules(repo: nil, root: checkout) }.to raise_error(SystemExit).and output(/--repo OWNER\/NAME/).to_stderr
+      expect(calls).to be_empty
+    end
   end
 
   it "applies the main, next and release rulesets with one approval required" do

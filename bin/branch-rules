@@ -7,6 +7,7 @@
 require "json"
 require "open3"
 require "optparse"
+require_relative "../lib/github_origin"
 
 class BranchRules
   RULESETS = "config/github/rulesets"
@@ -49,10 +50,7 @@ class BranchRules
   def say(msg) = puts(msg)
 
   def detect_repo
-    out, ok = gh("repo", "view", "--json", "nameWithOwner", "--jq", ".nameWithOwner")
-    abort("bin/branch-rules: no GitHub repo for this checkout; pass --repo OWNER/NAME") unless ok
-
-    out
+    GithubOrigin.repo(@root) || abort("bin/branch-rules: origin isn't a GitHub repository; pass --repo OWNER/NAME")
   end
 
   def existing_rulesets
@@ -119,7 +117,7 @@ if $PROGRAM_NAME == __FILE__
   options = {}
   OptionParser.new do |o|
     o.banner = "Usage: bin/branch-rules [options]"
-    o.on("--repo OWNER/NAME", "GitHub repository (default: this checkout's)") { |v| options[:repo] = v }
+    o.on("--repo OWNER/NAME", "GitHub repository (default: origin's)") { |v| options[:repo] = v }
     o.on("--solo", "Require no approval: you merge your own PRs, and GitHub refuses a self-approval") { options[:solo] = true }
     o.on("--dry-run", "Print the plan without changing anything") { options[:dry_run] = true }
   end.parse!

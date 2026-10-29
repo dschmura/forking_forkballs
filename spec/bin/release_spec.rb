@@ -9,6 +9,7 @@ RSpec.describe Release do
   let(:clone) { workdir.join("app") }
   let(:bin) { workdir.join("bin") }
   let(:log) { workdir.join("gh.log") }
+  let(:repos_log) { workdir.join("gh_repo.log") }
   let(:today) { Date.new(2026, 10, 27) }
   let(:gh_create) { 'echo "https://github.com/me/app/pull/42"' }
   let(:gh_merge) { "exit 0" }
@@ -62,6 +63,9 @@ RSpec.describe Release do
   def setup_repo(next_changelog: changelog)
     git("init", "-q", "--bare", "-b", "main", origin.to_s, dir: workdir)
     git("clone", "-q", origin.to_s, clone.to_s, dir: workdir)
+    git("remote", "set-url", "origin", "git@github.com:me/app.git")
+    git("config", "url.#{origin}.insteadOf", "git@github.com:me/app.git")
+    git("remote", "add", "upstream", "git@github.com:me/template.git")
     clone.join(".github/PULL_REQUEST_TEMPLATE").mkpath
     clone.join(".github/PULL_REQUEST_TEMPLATE/release.md")
          .write(Rails.root.join(".github/PULL_REQUEST_TEMPLATE/release.md").read)
@@ -81,6 +85,7 @@ RSpec.describe Release do
     bin.join("gh").write(<<~SH)
       #!/bin/sh
       echo "CALL $*" >> "#{log}"
+      echo "$GH_REPO" >> "#{repos_log}"
       case "$*" in *"-file -"*) echo "BODY<<" >> "#{log}"; cat >> "#{log}"; echo ">>BODY" >> "#{log}" ;; esac
       case "$*" in
         "pr create"*) #{gh_create} ;;
@@ -114,6 +119,24 @@ RSpec.describe Release do
 
   def calls = log.exist? ? log.read : ""
   def remote_heads = git("ls-remote", "--heads", "origin").lines.map { |l| l.split.last.delete_prefix("refs/heads/") }
+
+  describe "the repository it acts on" do
+    it "is origin's, not upstream's, which gh would pick" do
+      setup_repo(next_changelog: named)
+      run_release("cut")
+
+      expect(repos_log.readlines(chomp: true)).to all(eq("me/app")).and be_any
+    end
+
+    it "is never guessed: with origin outside GitHub it stops before acting" do
+      setup_repo(next_changelog: named)
+      git("remote", "set-url", "origin", origin.to_s)
+
+      expect { run_release("cut") }.to raise_error(Release::Error, /origin isn't a GitHub repository/)
+      expect(calls).to be_empty
+      expect(remote_heads).not_to include("release/2026.10.27")
+    end
+  end
 
   describe "naming" do
     before { setup_repo }

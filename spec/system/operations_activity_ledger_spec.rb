@@ -343,6 +343,7 @@ RSpec.describe "Operations activity ledger", type: :system do
     page.current_window.resize_to(390, 1000)
     visit operations_activity_logs_path
     within_results { expect(page).to have_css("tbody tr", minimum: 1) }
+    expect(page.evaluate_script("document.documentElement.scrollWidth")).to be <= 390
 
     click_button I18n.t("operations.activity_logs.index.ranges_menu.30d")
     expect(page).to have_css("[role=dialog]")
