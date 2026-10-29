@@ -6,7 +6,9 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ### Added
 
-- `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release when a release's merge-back merges and cuts it when its changelog PR merges; `bin/release prepare --skip-if-empty` starts nothing when `[Unreleased]` is empty.
+- `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release after any merge into `next` once staging is free, and cuts it once CI passes on `next`; `bin/release prepare --if-needed` and `cut --if-needed` stop quietly when there's nothing to do yet.
+- `bin/release cut` refuses until CI has passed on the commit it would cut.
+- `/docs/developer/releasing` gains "What makes it run": the script, workflows, PR features and repository settings that move a release along.
 
 ### Changed
 
@@ -14,6 +16,7 @@ All notable changes to ModelRails are documented here, organized by phase.
 - The PR template asks for "Depends on", "What the specs can't show" as steps a reviewer can repeat on staging, and a removable-from-a-release check.
 - `bin/release` says "Then:" for its next step and spells the ship command as `ship <PR> <commit reviewed on staging>`, the same as the release template and the guide.
 - The PR template asks for a changelog line under `[Unreleased]`.
+- CI runs again on every push to `next`, so PRs that pass alone but break each other show up when the second merges, not on staging.
 
 ### Fixed
 

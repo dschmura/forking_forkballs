@@ -13,7 +13,7 @@ judged once per release, on staging, where a person's judgment is what's
 needed. Production runs a release someone checked, tagged so you can roll back
 to it, or a hotfix that couldn't wait for one.
 
-<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with its hand checks written in the PR, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 590 582" width="100%" class="hidden md:block" role="img" aria-label="The release flow, following one story, #1487 New onboarding flow. On your branch it is a draft with its hand checks written in the PR, checked by you on your own machine. Merged into next it joins the pile of stories, which deploys nowhere and which CI checks again after every merge. bin/release cut binds next into release/&lt;name&gt;, a book whose page 3 is the story, checked together on staging. bin/release ship publishes it on main, in production, as v2026.10.27, and the version it replaces goes to the archive. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -78,7 +78,7 @@ to it, or a hotfix that couldn't wait for one.
     <text x="340" y="122" font-weight="700"><tspan font-family="ui-monospace, monospace">#1487</tspan> New onboarding</text>
     <text x="340" y="152"><tspan font-family="ui-monospace, monospace">#1488</tspan> Search</text>
     <text x="435" y="214" text-anchor="middle">deploys nowhere</text>
-    <text x="435" y="232" text-anchor="middle">checked by CI, one at a time</text>
+    <text x="435" y="232" text-anchor="middle">checked by CI after every merge</text>
     <text class="text-warning" x="14" y="314" font-size="15" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
     <text x="236" y="314" text-anchor="end">The book</text>
     <text x="24" y="360" font-weight="700">Contents</text>
@@ -111,7 +111,7 @@ to it, or a hotfix that couldn't wait for one.
   </g>
 </svg>
 
-<svg viewBox="0 0 340 816" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow, top to bottom. Your branch, the draft, checked by you on your own machine. It merges into next, the pile, which deploys nowhere and which CI checked one at a time. bin/release cut binds next into release/&lt;name&gt;, the book, checked together on staging. bin/release ship publishes it on main, in production, and earlier versions are archived. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
+<svg viewBox="0 0 340 816" width="100%" class="md:hidden max-w-xs mx-auto" role="img" aria-label="The release flow, top to bottom. Your branch, the draft, checked by you on your own machine. It merges into next, the pile, which deploys nowhere and which CI checks again after every merge. bin/release cut binds next into release/&lt;name&gt;, the book, checked together on staging. bin/release ship publishes it on main, in production, and earlier versions are archived. main then merges back into next." fill="none" stroke="currentColor" font-family="ui-sans-serif, system-ui, sans-serif">
   <defs>
     <marker id="arrow-release-narrow" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto">
       <path d="M0,0 L8,3 L0,6 z" fill="currentColor" stroke="none"/>
@@ -184,7 +184,7 @@ to it, or a hotfix that couldn't wait for one.
     <text x="306" y="228" text-anchor="end">The pile</text>
     <text x="120" y="280">deploys nowhere</text>
     <text x="120" y="300">checked by CI,</text>
-    <text x="120" y="320">one at a time</text>
+    <text x="120" y="320">after every merge</text>
     <text class="text-warning" x="14" y="428" font-size="18" font-weight="700" font-family="ui-monospace, monospace">release/&lt;name&gt;</text>
     <text x="306" y="428" text-anchor="end">The book</text>
     <text x="120" y="480">deploys to staging</text>
@@ -204,7 +204,7 @@ to it, or a hotfix that couldn't wait for one.
 
 Every PR is a story. On your branch it's a draft only you have read (the
 book kind, not a GitHub draft PR). Merged
-into `next`, it joins a pile of stories that CI checked one at a time.
+into `next`, it joins a pile of stories that CI checks again, all together, after every merge.
 `bin/release cut` binds the pile into a book on staging, where people read
 the stories together for the first time, and `bin/release ship` publishes
 it. The version it replaces goes to the archive, tagged, ready to republish
@@ -215,7 +215,7 @@ switches on the deploys.
 | Branch | Deploys to | Checked by | Takes changes from |
 | --- | --- | --- | --- |
 | your PR's branch | your machine | you, or the agent writing it | your commits |
-| `next` | nowhere | CI on every PR, plus a reviewer's approval on a team | feature PRs |
+| `next` | nowhere | CI on every PR and again after every merge, plus a reviewer's approval on a team | feature PRs |
 | `release/<name>` | staging | reviewers, working through each PR's notes | its cut from `next`, then fix, revert and hotfix PRs |
 | `main` | production | nothing new: it runs the commit staging ran, or a hotfix | release and hotfix PRs |
 
@@ -330,6 +330,11 @@ under `[Unreleased]` when the release was named, though its code is in the
 release. `cut` then refuses and lists what's under `[Unreleased]`. Move those
 lines under `## v<name>` with a PR into `next`, and run `cut` again.
 
+**Only what CI passed.** CI runs on every push to `next`, and `cut` refuses
+until it has passed on the commit it would cut. If it failed there, fix it by
+a PR into `next` with its changelog line under `## v<name>`, so this release
+takes the fix, then run `cut` again.
+
 **One release at a time.** `cut` refuses while another `release/*` branch is
 open, because staging runs one build and a second candidate would replace the
 one under review. It also refuses until `main` is in `next`, meaning the last
@@ -425,21 +430,23 @@ changes `main` already has, and can conflict on them.
 ## When a release starts
 
 By hand, a release starts when someone runs `bin/release prepare`. A fork can
-have it start whenever staging is free instead. Set the `AUTO_RELEASE`
-repository variable to `true` and add a `RELEASE_TOKEN` secret, and
+have it start whenever staging is free instead, so nothing waits in `next`
+longer than one review on staging. Set the `AUTO_RELEASE` repository variable
+to `true` and add a `RELEASE_TOKEN` secret, and
 `.github/workflows/next_release.yml` takes the first two steps itself:
 
-1. When a release's merge-back PR merges into `next`, it runs `bin/release
-   prepare --skip-if-empty`. The next release then holds everything that
-   merged while the last one was on staging. With nothing under
-   `[Unreleased]` it starts nothing, and the next release waits for someone
-   to run `prepare`.
-2. When that changelog PR merges, it runs `bin/release cut`, which deploys the
-   release to staging and opens its PR.
+1. When any PR merges into `next`, it runs `bin/release prepare --if-needed`.
+   That names a release only if none is under way and something is under
+   `[Unreleased]`; otherwise it says why and stops. So a release starts when
+   the last one's merge-back lands, or with the first PR after a quiet spell.
+2. When CI passes on `next`, it runs `bin/release cut --if-needed`, which cuts
+   a release once one is named, deploying it to staging and opening its PR.
 
 Reviewers hear about it once, from the release PR. Shipping stays a person's
-call: `bin/release ship` still takes the commit someone reviewed on staging. A
-hotfix's merge-back starts nothing.
+call: `bin/release ship` still takes the commit someone reviewed on staging.
+PRs from forks of this repository start nothing, since GitHub withholds the
+token from them; the next merge from a branch here, or `prepare` by hand,
+starts the release.
 
 The workflow needs its own token because GitHub runs no workflows on pull
 requests opened with a workflow's built-in token, so the changelog PR's checks
@@ -497,17 +504,69 @@ staging untouched, a fork can loosen the flow a step at a time:
    tested here: confirm on a scratch repository that GitHub still asks for the
    code owner's approval before you rely on it.
 2. Skip staging for releases that touch none of those paths.
-3. Run `cut` and `ship` from CI after every green merge into `next`.
+3. Run `ship` from CI too, once the release PR's checks pass. `cut` already
+   runs from CI when `AUTO_RELEASE` is on.
 
 The last step is where [Impatient
 Programming](https://impatientprogramming.org/rules/#rule-27) points: green
 merges itself. The tags, the changelog and rollback by commit stay the same at
 every step.
 
+## What makes it run
+
+Four kinds of lever move a release along.
+
+**`bin/release` does the work.** It wraps `git` and the GitHub CLI: `prepare`
+names the release in the changelog and opens that as a PR into `next`, `cut`
+pushes `release/<name>` and opens its PR into `main`, and `ship` merges it,
+tags it and opens the merge-back. A person and a workflow run the same
+commands, so automating a step changes who runs it, not what it does.
+
+**Workflows react to events.** Each file in `.github/workflows/` names the
+event that starts it:
+
+| Workflow | Starts when | Does |
+| --- | --- | --- |
+| `ci.yml` | a PR opens or updates; a push to `next` or `main` | runs the checks |
+| `deploy.yml` | a push to `release/**` or `main` | deploys: release branches to staging, `main` to production |
+| `next_release.yml` | a PR merges into `next` | `bin/release prepare --if-needed` |
+| `next_release.yml` | CI passes on a push to `next` | `bin/release cut --if-needed` |
+
+One step's output is the next one's event. `cut` pushing a release branch is
+what deploys staging, and the changelog PR merging is a push to `next`, which
+runs CI, whose passing starts the cut.
+
+**GitHub's PR features keep it moving.** Auto-merge lands the changelog and
+merge-back PRs once their checks pass, and once approved where the rules ask
+for an approval. The branch rules from `bin/branch-rules` make every change to
+`next`, `release/*` and `main` a PR with passing checks, and delete branches
+once they merge, which is how `bin/release` tells that a release is still
+under way: its branch still exists.
+
+**Repository settings are the switches.** `DEPLOY_STAGING` and
+`DEPLOY_PRODUCTION` turn on the deploys, and `AUTO_RELEASE` turns on
+`next_release.yml`. `RELEASE_TOKEN` is the token that workflow acts with,
+because GitHub runs no checks on a PR opened with a workflow's built-in token,
+so the changelog PR would never merge.
+
+With every switch on, one release runs like this:
+
+1. A PR merges into `next`. CI checks `next`, and prepare names a release if
+   staging is free and something is waiting.
+2. The changelog PR merges itself. CI checks `next` again.
+3. CI passes, so the cut pushes `release/<name>`, staging deploys it, and the
+   release PR opens.
+4. A person reviews it on staging and runs `bin/release ship`. Production
+   deploys, the merge-back merges itself, and that merge starts step 1 for the
+   next release.
+
+Step 4 is the only one that needs a person, apart from approvals on a team.
+
 ## Changing the flow
 
 The flow is a default, not a requirement. The branch rules live in
-`config/github/rulesets/`, the deploys in `.github/workflows/deploy.yml`, the
+`config/github/rulesets/`, the checks in `.github/workflows/ci.yml` (which
+`bin/release cut` reads by name), the deploys in `.github/workflows/deploy.yml`, the
 automatic start in `.github/workflows/next_release.yml`, the
 steps in `bin/release`, and this page, the release template in
 `.github/PULL_REQUEST_TEMPLATE/release.md` and the PR template in
