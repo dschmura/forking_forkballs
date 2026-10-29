@@ -3,12 +3,10 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [ main ]
+    branches: [ next, main ]
 
-# A new push to a PR branch supersedes the in-flight run instead of letting a
-# stale ~8-min run finish (freeing runners + faster feedback). head_ref groups
-# a PR's runs; ref covers push events. cancel-in-progress is gated to PRs so
-# every push to main completes for the historical record.
+# A newer push to a PR supersedes its in-flight run; a push to next or main always
+# completes, so each merge keeps its own result.
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}

@@ -14,6 +14,7 @@ All notable changes to ModelRails are documented here, organized by phase.
 - The PR template asks for "Depends on", "What the specs can't show" as steps a reviewer can repeat on staging, and a removable-from-a-release check.
 - `bin/release` says "Then:" for its next step and spells the ship command as `ship <PR> <commit reviewed on staging>`, the same as the release template and the guide.
 - The PR template asks for a changelog line under `[Unreleased]`.
+- CI runs again on every push to `next`, so PRs that pass alone but break each other show up when the second merges, not on staging.
 
 ### Fixed
 
