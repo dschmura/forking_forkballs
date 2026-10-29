@@ -370,6 +370,25 @@ RSpec.describe "Operations activity ledger", type: :system do
 
     rename_row.find("summary").click
     expect(page).to have_css("details[open]")
+    diag = <<~JS
+      (() => {
+        const d = e => e ? `${e.tagName}#${e.id}.${String(e.className).replace(/\\s+/g, ' ').slice(0, 60)} ${JSON.stringify(e.getBoundingClientRect())}` : 'null';
+        const b = document.querySelector('button[aria-controls=activity_about]');
+        const r = b.getBoundingClientRect();
+        const out = [`DIAG scrollY=${scrollY} innerH=${innerHeight} docW=${document.documentElement.scrollWidth} active=${d(document.activeElement)}`, `DIAG btn ${d(b)}`];
+        out.push(`DIAG summary ${d(document.querySelector('details[open] summary'))}`);
+        out.push(`DIAG header ${d(document.querySelector('header'))}`);
+        out.push(`DIAG brand ${d(document.querySelector('header a'))}`);
+        for (const [x, y] of [[r.left + 2, r.top + 2], [r.left + r.width / 2, r.top + r.height / 2], [r.right - 2, r.bottom - 2], [r.left + 2, r.bottom - 2]]) {
+          out.push(`DIAG at (${x | 0},${y | 0}): ` + document.elementsFromPoint(x, y).slice(0, 4).map(d).join(' | '));
+        }
+        return out.join("\\n");
+      })()
+    JS
+    puts page.evaluate_script(diag)
+    ensure_light_mode
+    puts "DIAG after light mode"
+    puts page.evaluate_script(diag)
     within_results do
       expect(page).to have_css("div[role=region] table")
       expect(page).to have_no_css("div[role=region] [data-slot=toolbar]")
