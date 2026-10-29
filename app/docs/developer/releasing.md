@@ -308,6 +308,14 @@ instead would collide with those lines at the merge-back.
 a release branch. Only one release is open at a time (see below), so the
 second one starts after the first has shipped.
 
+**In a fork, the template's releases count as shipped.** A fork's changelog
+carries the template's release sections, but only the template tagged them.
+So `bin/release` also reads the tags of the template that `.fork.yml` names.
+A section counts as shipped when the template tagged it on a commit already
+in `next`. A release the fork names itself never takes a name the template
+has used. If the template is private and the token can't read it,
+`bin/release` stops and says so.
+
 ## Cut a release
 
 ```bash
@@ -576,4 +584,6 @@ together.
 The changelog and release-name convention is separate from the flow. It lives
 in `lib/release_changelog.rb`, and `bin/release` reads it only through that
 module's public methods. A fork that keeps its changelog another way replaces
-that file, keeps the method signatures, and leaves the rest alone.
+that file, keeps the method signatures, and leaves the rest alone. In a fork,
+`bin/release` also reads `template_url` from `.fork.yml`, which `bin/fork`
+writes.

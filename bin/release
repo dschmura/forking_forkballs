@@ -9,6 +9,7 @@ require "json"
 require "open3"
 require "optparse"
 require "tmpdir"
+require "yaml"
 require_relative "../lib/clean_git_env"
 require_relative "../lib/github_origin"
 require_relative "../lib/release_changelog"
@@ -48,7 +49,8 @@ class Release
     end
     return say("Nothing under [Unreleased] on next, so no release to start.") if @opts[:if_needed] && ReleaseChangelog.unreleased(changelog).empty?
 
-    name = ReleaseChangelog.names(@opts.fetch(:today) { Date.today }).find { |n| !tagged?(n) && !branch?("release/#{n}") }
+    name = ReleaseChangelog.names(@opts.fetch(:today) { Date.today })
+                           .find { |n| !tagged?(n) && !template_tags.key?(n) && !branch?("release/#{n}") }
     say("== Prepare v#{name} ==")
     return dry("push changelog/#{name} (CHANGELOG.md naming v#{name}) and queue its PR into next") if dry_run?
 
@@ -66,7 +68,7 @@ class Release
     name = ReleaseChangelog.named_release(changelog)
     return say("Nothing to cut: next names no release waiting to be cut.") if @opts[:if_needed] && !waiting_to_cut?(name)
     raise Error, "next's CHANGELOG.md names no release yet: run bin/release prepare and let its PR merge" unless name
-    raise Error, "v#{name} already shipped: run bin/release prepare for the next one" if tagged?(name)
+    raise Error, "v#{name} already shipped: run bin/release prepare for the next one" if shipped?(name)
 
     branch = "release/#{name}"
     open = remote_refs.find { |ref| ref.start_with?("refs/heads/release/") && ref != "refs/heads/#{branch}" }
@@ -130,17 +132,37 @@ class Release
   def tagged?(name) = remote_refs.include?("refs/tags/v#{name}")
   def branch?(name) = remote_refs.include?("refs/heads/#{name}")
   def remote_refs = @remote_refs ||= git("ls-remote", "--heads", "--tags", "origin").lines.map { |l| l.split.last }
+
+  # A fork's changelog carries the template's releases, which only the template tagged.
+  def shipped?(name) = tagged?(name) || template_tags[name]&.then { |commit| ancestor?(commit, "origin/next") }
+
+  def template_tags
+    @template_tags ||= if (template = template_repo)
+      out, err, status = Open3.capture3(CLEAN_GIT_ENV, "git", "-C", @root, "ls-remote", "--tags", "https://github.com/#{template}.git")
+      raise Error, "can't read the tags of #{template}, the template in .fork.yml: #{err.strip}" unless status.success?
+
+      out.lines.to_h { |line| line.split.reverse }.transform_keys { |ref| ref[%r{\Arefs/tags/v(.+?)(?:\^\{\})?\z}, 1] }
+    else
+      {}
+    end
+  end
+
+  def template_repo
+    return if git("ls-tree", "--name-only", "origin/next", ".fork.yml").empty?
+
+    YAML.safe_load(git("show", "origin/next:.fork.yml")).to_h["template_url"].to_s[GithubOrigin::URL, :repo]
+  end
   def pr_info(pr) = JSON.parse(gh("pr", "view", pr, "--json", "state,headRefName,baseRefName,mergeCommit"))
 
   def release_under_way(changelog)
     named = ReleaseChangelog.named_release(changelog)
-    return "v#{named} is named but hasn't shipped" if named && !tagged?(named)
+    return "v#{named} is named but hasn't shipped" if named && !shipped?(named)
 
     changelog_branch = remote_refs.find { |ref| ref.start_with?("refs/heads/changelog/") }
     "#{changelog_branch.delete_prefix('refs/heads/')} hasn't merged" if changelog_branch
   end
 
-  def waiting_to_cut?(name) = name && !tagged?(name) && !branch?("release/#{name}")
+  def waiting_to_cut?(name) = name && !shipped?(name) && !branch?("release/#{name}")
 
   def require_passing_ci(commit, name)
     runs = JSON.parse(gh("run", "list", "--workflow", "ci.yml", "--commit", commit, "--event", "push", "--json", "status,conclusion"))
