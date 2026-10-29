@@ -10,6 +10,7 @@ require "open3"
 require "optparse"
 require "tmpdir"
 require_relative "../lib/clean_git_env"
+require_relative "../lib/github_origin"
 require_relative "../lib/release_changelog"
 
 class Release
@@ -27,6 +28,7 @@ class Release
   end
 
   def run(command, *args)
+    @repo = GithubOrigin.repo(@root) or raise Error, "origin isn't a GitHub repository, so there's no telling which one to act on"
     case command
     when "prepare"    then prepare
     when "cut"        then cut
@@ -240,7 +242,7 @@ class Release
   end
 
   def gh(*args, stdin: nil, status: false)
-    out, err, result = Open3.capture3(CLEAN_GIT_ENV, "gh", *args, stdin_data: stdin.to_s, chdir: @root)
+    out, err, result = Open3.capture3(CLEAN_GIT_ENV.merge("GH_REPO" => @repo), "gh", *args, stdin_data: stdin.to_s, chdir: @root)
     return [ result.success? ? out.strip : err.strip, result.success? ] if status
     raise Error, "gh #{args.first(2).join(' ')} failed: #{err.strip}" unless result.success?
 

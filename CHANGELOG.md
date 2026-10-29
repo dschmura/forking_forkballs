@@ -23,6 +23,10 @@ All notable changes to ModelRails are documented here, organized by phase.
 - `bin/release cut` cuts `next` as it stood the last time `[Unreleased]` was empty, so a PR merged after `prepare` waits for the next release instead of shipping without a line in "What ships"; it refuses, listing the lines, when they landed under `[Unreleased]` while the changelog PR was open.
 - `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.
 
+### Security
+
+- In a fork clone, `gh` acts on the fork, not the template: `bin/release` and `bin/branch-rules` target `origin`'s repository, and `bin/fork` and `bin/setup` make `origin` `gh`'s default. `gh` prefers a remote named `upstream`, which `bin/fork` points at the template.
+
 ## v2026.10.27
 
 ### Added
