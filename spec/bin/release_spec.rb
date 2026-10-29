@@ -417,6 +417,66 @@ RSpec.describe Release do
     end
   end
 
+  describe "in a fork, whose changelog carries the template's releases" do
+    let(:template) { workdir.join("template.git") }
+    let(:with_fork_entry) { named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- A fork feature.\n") }
+
+    # The template tags v2026.10.27 at `tagged`; next gains the .fork.yml that bin/fork commits.
+    def fork_from_template(tagged: "origin/next", template_url: "git@github.com:me/template.git")
+      git("init", "-q", "--bare", template.to_s, dir: workdir)
+      git("config", "url.#{template}.insteadOf", "https://github.com/me/template.git")
+      git("push", "-q", template.to_s, "#{git('rev-parse', tagged)}:refs/tags/v2026.10.27")
+      clone.join(".fork.yml").write({ "name" => "app", "template_url" => template_url }.to_yaml)
+      git("add", ".fork.yml")
+      git("commit", "-q", "-m", "fork")
+      git("push", "-q", "origin", "HEAD:next")
+    end
+
+    def commit_outside_next = git("commit-tree", "HEAD^{tree}", "-m", "the template's own")
+
+    it "starts its own release past one the template shipped" do
+      setup_repo(next_changelog: with_fork_entry)
+      fork_from_template
+      run_release("prepare", if_needed: true, dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "has nothing to cut when the release next names is one the template shipped" do
+      setup_repo(next_changelog: named)
+      fork_from_template
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "still cuts its own release when the template tagged the same name on a commit next doesn't have" do
+      setup_repo(next_changelog: named)
+      fork_from_template(tagged: commit_outside_next)
+      run_release("cut", if_needed: true)
+
+      expect(remote_heads).to include("release/2026.10.27")
+    end
+
+    it "never names a release after one the template tagged" do
+      setup_repo
+      fork_from_template(tagged: commit_outside_next)
+      run_release("prepare", dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "stops, rather than guess, when it can't read the template's tags" do
+      setup_repo(next_changelog: named)
+      fork_from_template(template_url: "git@github.com:me/private-template.git")
+      git("config", "url.#{workdir.join('unreadable.git')}.insteadOf", "https://github.com/me/private-template.git")
+
+      expect { run_release("cut", if_needed: true) }
+        .to raise_error(Release::Error, %r{can't read the tags of me/private-template})
+    end
+  end
+
   describe "ship" do
     let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main" } }
     let(:main_sha) { git("rev-parse", "origin/main") }
