@@ -6,7 +6,8 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ### Added
 
-- `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release when a release's merge-back merges and cuts it when its changelog PR merges; `bin/release prepare --skip-if-empty` starts nothing when `[Unreleased]` is empty.
+- `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release after any merge into `next` once staging is free, and cuts it once CI passes on `next`; `bin/release prepare --if-needed` and `cut --if-needed` stop quietly when there's nothing to do yet.
+- `bin/release cut` refuses until CI has passed on the commit it would cut.
 
 ### Changed
 

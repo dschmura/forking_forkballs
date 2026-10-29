@@ -5,10 +5,11 @@ on:
   pull_request:
     types: [ closed ]
     branches: [ next ]
-
-concurrency:
-  group: next-release
-  cancel-in-progress: false
+  # Safe: cut acts only on a push to next, checks next out by name, and reads only the run's event and result.
+  workflow_run: # jactionlint ignore=dangerous-triggers
+    workflows: [ CI ]
+    types: [ completed ]
+    branches: [ next ]
 
 permissions:
   contents: read
@@ -17,10 +18,12 @@ jobs:
   prepare:
     if: >-
       vars.AUTO_RELEASE == 'true' &&
+      github.event_name == 'pull_request' &&
       github.event.pull_request.merged &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      startsWith(github.event.pull_request.head.ref, 'merge-back/') &&
-      !startsWith(github.event.pull_request.head.ref, 'merge-back/main-')
+      github.event.pull_request.head.repo.full_name == github.repository
+    concurrency:
+      group: next-release-prepare
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -41,14 +44,17 @@ jobs:
           gh auth setup-git
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          bin/release prepare --skip-if-empty
+          bin/release prepare --if-needed
 
   cut:
     if: >-
       vars.AUTO_RELEASE == 'true' &&
-      github.event.pull_request.merged &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      startsWith(github.event.pull_request.head.ref, 'changelog/')
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.conclusion == 'success'
+    concurrency:
+      group: next-release-cut
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -67,4 +73,4 @@ jobs:
           GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           gh auth setup-git
-          bin/release cut
+          bin/release cut --if-needed

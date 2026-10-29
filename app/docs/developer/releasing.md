@@ -330,6 +330,11 @@ under `[Unreleased]` when the release was named, though its code is in the
 release. `cut` then refuses and lists what's under `[Unreleased]`. Move those
 lines under `## v<name>` with a PR into `next`, and run `cut` again.
 
+**Only what CI passed.** CI runs on every push to `next`, and `cut` refuses
+until it has passed on the commit it would cut. If it failed there, fix it by
+a PR into `next` with its changelog line under `## v<name>`, so this release
+takes the fix, then run `cut` again.
+
 **One release at a time.** `cut` refuses while another `release/*` branch is
 open, because staging runs one build and a second candidate would replace the
 one under review. It also refuses until `main` is in `next`, meaning the last
@@ -425,21 +430,23 @@ changes `main` already has, and can conflict on them.
 ## When a release starts
 
 By hand, a release starts when someone runs `bin/release prepare`. A fork can
-have it start whenever staging is free instead. Set the `AUTO_RELEASE`
-repository variable to `true` and add a `RELEASE_TOKEN` secret, and
+have it start whenever staging is free instead, so nothing waits in `next`
+longer than one review on staging. Set the `AUTO_RELEASE` repository variable
+to `true` and add a `RELEASE_TOKEN` secret, and
 `.github/workflows/next_release.yml` takes the first two steps itself:
 
-1. When a release's merge-back PR merges into `next`, it runs `bin/release
-   prepare --skip-if-empty`. The next release then holds everything that
-   merged while the last one was on staging. With nothing under
-   `[Unreleased]` it starts nothing, and the next release waits for someone
-   to run `prepare`.
-2. When that changelog PR merges, it runs `bin/release cut`, which deploys the
-   release to staging and opens its PR.
+1. When any PR merges into `next`, it runs `bin/release prepare --if-needed`.
+   That names a release only if none is under way and something is under
+   `[Unreleased]`; otherwise it says why and stops. So a release starts when
+   the last one's merge-back lands, or with the first PR after a quiet spell.
+2. When CI passes on `next`, it runs `bin/release cut --if-needed`, which cuts
+   a release once one is named, deploying it to staging and opening its PR.
 
 Reviewers hear about it once, from the release PR. Shipping stays a person's
-call: `bin/release ship` still takes the commit someone reviewed on staging. A
-hotfix's merge-back starts nothing.
+call: `bin/release ship` still takes the commit someone reviewed on staging.
+PRs from forks of this repository start nothing, since GitHub withholds the
+token from them; the next merge from a branch here, or `prepare` by hand,
+starts the release.
 
 The workflow needs its own token because GitHub runs no workflows on pull
 requests opened with a workflow's built-in token, so the changelog PR's checks

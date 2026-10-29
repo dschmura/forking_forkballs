@@ -13,6 +13,7 @@ RSpec.describe Release do
   let(:gh_create) { 'echo "https://github.com/me/app/pull/42"' }
   let(:gh_merge) { "exit 0" }
   let(:gh_api) { "exit 0" }
+  let(:gh_runs) { %q(echo '[{"status":"completed","conclusion":"success"}]') }
   let(:changelog) do
     <<~MD
       # Changelog
@@ -87,6 +88,7 @@ RSpec.describe Release do
         "pr view"*) if [ -f "#{bin}/merged" ]; then cat "#{bin}/merged.json"; else cat "#{bin}/open.json"; fi ;;
         "pr merge"*"--match-head-commit"*) ( #{gh_merge} ); s=$?; [ $s = 0 ] && touch "#{bin}/merged"; exit $s ;;
         "api -X PUT"*) #{gh_api} ;;
+        "run list"*) #{gh_runs} ;;
         *) : ;;
       esac
     SH
@@ -172,18 +174,43 @@ RSpec.describe Release do
       expect(remote_heads).to contain_exactly("main", "next")
     end
 
-    it "starts no release under --skip-if-empty when nothing is under [Unreleased], and says so" do
+    it "refuses while an earlier changelog PR hasn't merged" do
+      setup_repo
+      git("push", "-q", "origin", "origin/next:refs/heads/changelog/2026.10.26")
+
+      expect { run_release("prepare") }.to raise_error(Release::Error, %r{changelog/2026\.10\.26 hasn't merged})
+      expect(remote_heads).not_to include("changelog/2026.10.27")
+    end
+
+    it "starts no release under --if-needed when nothing is under [Unreleased], and says so" do
       setup_repo(next_changelog: named)
       git("push", "-q", "origin", "main:refs/tags/v2026.10.27")
-      run_release("prepare", skip_if_empty: true)
+      run_release("prepare", if_needed: true)
 
       expect(@output).to include("Nothing under [Unreleased] on next")
       expect(remote_heads).to contain_exactly("main", "next")
     end
 
-    it "names the release as usual under --skip-if-empty when [Unreleased] has entries" do
+    it "starts no release under --if-needed while one is under way, and says which" do
+      setup_repo(next_changelog: named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Later.\n"))
+      run_release("prepare", if_needed: true)
+
+      expect(@output).to include("v2026.10.27 is named but hasn't shipped, so the next release waits for it")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "starts no release under --if-needed while a changelog PR is waiting to merge" do
       setup_repo
-      run_release("prepare", skip_if_empty: true)
+      git("push", "-q", "origin", "origin/next:refs/heads/changelog/2026.10.27")
+      run_release("prepare", if_needed: true)
+
+      expect(@output).to include("changelog/2026.10.27 hasn't merged")
+      expect(calls).not_to include("pr create")
+    end
+
+    it "names the release as usual under --if-needed when [Unreleased] has entries" do
+      setup_repo
+      run_release("prepare", if_needed: true)
 
       expect(remote_heads).to include("changelog/2026.10.27")
     end
@@ -243,6 +270,69 @@ RSpec.describe Release do
 
       expect { run_release("cut") }.to raise_error(Release::Error, /- Landed after prepare\..*## v2026\.10\.27/m)
       expect(remote_heads).not_to include("release/2026.10.27")
+    end
+
+    it "asks CI about the commit it cuts" do
+      setup_repo(next_changelog: named)
+      run_release("cut")
+
+      expect(calls).to include("CALL run list --workflow ci.yml --commit #{git("rev-parse", "origin/next")} --event push")
+    end
+
+    context "when CI failed on the commit it would cut" do
+      let(:gh_runs) { %q(echo '[{"status":"completed","conclusion":"failure"}]') }
+
+      it "refuses, and says how a fix joins the release" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI failed on \h{7}.*## v2026\.10\.27/m)
+        expect(remote_heads).not_to include("release/2026.10.27")
+      end
+    end
+
+    context "when CI hasn't finished on the commit it would cut" do
+      let(:gh_runs) { %q(echo '[{"status":"in_progress","conclusion":""}]') }
+
+      it "refuses until it passes" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI hasn't passed on \h{7} yet/)
+        expect(remote_heads).not_to include("release/2026.10.27")
+      end
+    end
+
+    context "when CI hasn't run on the commit it would cut" do
+      let(:gh_runs) { "echo '[]'" }
+
+      it "refuses until it passes" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI hasn't passed on \h{7} yet/)
+      end
+    end
+
+    it "cuts nothing under --if-needed when next names no release waiting to be cut, and says so" do
+      setup_repo
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "cuts nothing under --if-needed once the named release is cut" do
+      setup_repo(next_changelog: named)
+      git("push", "-q", "origin", "origin/next:refs/heads/release/2026.10.27")
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(calls).not_to include("pr create")
+    end
+
+    it "cuts as usual under --if-needed when a named release is waiting" do
+      setup_repo(next_changelog: named)
+      run_release("cut", if_needed: true)
+
+      expect(remote_heads).to include("release/2026.10.27")
     end
 
     it "refuses until prepare's changelog has landed on next" do
