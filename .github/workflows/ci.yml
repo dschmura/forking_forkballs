@@ -5,10 +5,10 @@ on:
   push:
     branches: [ next, main ]
 
-# A newer push to a PR supersedes its in-flight run; a push to next or main always
-# completes, so each merge keeps its own result.
+# A newer push to a PR supersedes its run; each push to next or main gets its own group,
+# since a shared one would cancel a queued run and leave that merge unchecked.
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Least-privilege default for every job: nothing here pushes, uploads SARIF,

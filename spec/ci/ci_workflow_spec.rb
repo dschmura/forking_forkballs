@@ -10,7 +10,8 @@ RSpec.describe "the CI workflow" do
     expect(triggers.dig("push", "branches")).to contain_exactly("next", "main")
   end
 
-  it "lets a run after a merge finish, so each merge keeps its own result" do
+  it "gives every push its own run, so each merge keeps its own result" do
+    expect(workflow.dig("concurrency", "group")).to eq("ci-${{ github.workflow }}-${{ github.head_ref || github.sha }}")
     expect(workflow.dig("concurrency", "cancel-in-progress")).to eq("${{ github.event_name == 'pull_request' }}")
   end
 end
