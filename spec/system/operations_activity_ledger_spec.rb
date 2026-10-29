@@ -364,6 +364,22 @@ RSpec.describe "Operations activity ledger", type: :system do
     find("button[aria-controls=activity_range]").send_keys(:escape)
     find("button[aria-controls=activity_about]").click
     expect(page).to have_css("#activity_about:not([hidden])")
+    warn "DIAG files in this process: #{RSpec.configuration.files_to_run.map { |f| f.sub(%r{.*/spec/}, 'spec/') }.join(' ')}"
+    warn "DIAG " + page.evaluate_script(<<~JS).to_json
+      (() => {
+        const doc = document.documentElement, b = document.querySelector('button[aria-controls=activity_about]').getBoundingClientRect();
+        const wide = [...document.querySelectorAll('body *')].map(e => [e, e.getBoundingClientRect()])
+          .filter(([, r]) => r.right > innerWidth + 1 || r.left < -1).sort((a, c) => (c[1].width - a[1].width)).slice(0, 8)
+          .map(([e, r]) => `${e.tagName}#${e.id}.${String(e.className).slice(0, 60)} L${Math.round(r.left)} R${Math.round(r.right)} W${Math.round(r.width)}`);
+        const at = document.elementFromPoint(b.left + b.width / 2, b.top + 2);
+        return { inner: [innerWidth, innerHeight], scroll: [scrollX, scrollY], docW: doc.scrollWidth, bodyW: document.body.scrollWidth,
+                 button: [b.left, b.top, b.width, b.height].map(Math.round),
+                 atButtonTop: at && `${at.tagName}#${at.id}.${String(at.className).slice(0, 80)}`, wide,
+                 brand: document.querySelector('header nav a')?.getBoundingClientRect().width,
+                 font: getComputedStyle(document.body).fontFamily };
+      })()
+    JS
+    page.save_screenshot(Rails.root.join("tmp/capybara/diag-about-open.png"))
     expect(axe_clean_in_both_themes?).to be(true), axe_violations_in_both_themes.join("\n")
     find("button[aria-controls=activity_about]").send_keys(:escape)
 
