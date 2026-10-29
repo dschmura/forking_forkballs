@@ -6,38 +6,39 @@ RSpec.describe "the next-release workflow" do
   let(:triggers) { workflow[true] || workflow["on"] }
   let(:prepare) { workflow.dig("jobs", "prepare") }
   let(:cut) { workflow.dig("jobs", "cut") }
-  let(:release_steps) { [ prepare, cut ].flat_map { |job| job["steps"] }.select { |step| step["run"].to_s.include?("bin/release") } }
+  let(:release_step) { ->(job) { job["steps"].find { |step| step["run"].to_s.include?("bin/release") } } }
 
-  it "runs only when a pull request into next closes" do
-    expect(triggers.keys).to eq([ "pull_request" ])
+  it "runs when a pull request into next closes, and when CI finishes on next" do
+    expect(triggers.keys).to contain_exactly("pull_request", "workflow_run")
     expect(triggers["pull_request"]).to eq("types" => [ "closed" ], "branches" => [ "next" ])
+    expect(triggers["workflow_run"]).to eq("workflows" => [ "CI" ], "types" => [ "completed" ], "branches" => [ "next" ])
   end
 
   it "stays off until the AUTO_RELEASE repository variable says true" do
     expect([ prepare["if"], cut["if"] ]).to all(include("vars.AUTO_RELEASE == 'true'"))
   end
 
-  it "acts only on merged pull requests from this repository's own branches" do
-    expect([ prepare["if"], cut["if"] ]).to all(include("github.event.pull_request.merged"))
-    expect([ prepare["if"], cut["if"] ]).to all(include("github.event.pull_request.head.repo.full_name == github.repository"))
+  it "names the next release after any merge into next from this repository's own branches" do
+    expect(prepare["if"]).to include("github.event_name == 'pull_request'")
+      .and include("github.event.pull_request.merged")
+      .and include("github.event.pull_request.head.repo.full_name == github.repository")
+    expect(prepare["if"]).not_to include("head.ref")
+    expect(release_step.(prepare)["run"]).to include("bin/release prepare --if-needed")
   end
 
-  it "names the next release when a release's merge-back merges, not a hotfix's" do
-    expect(prepare["if"]).to include("startsWith(github.event.pull_request.head.ref, 'merge-back/')")
-    expect(prepare["if"]).to include("!startsWith(github.event.pull_request.head.ref, 'merge-back/main-')")
-    expect(release_steps.first["run"]).to include("bin/release prepare --skip-if-empty")
-  end
-
-  it "cuts the release once its changelog PR merges" do
-    expect(cut["if"]).to include("startsWith(github.event.pull_request.head.ref, 'changelog/')")
-    expect(release_steps.last["run"]).to include("bin/release cut")
+  it "cuts only once CI has passed on a push to next" do
+    expect(cut["if"]).to include("github.event_name == 'workflow_run'")
+      .and include("github.event.workflow_run.event == 'push'")
+      .and include("github.event.workflow_run.conclusion == 'success'")
+    expect(release_step.(cut)["run"]).to include("bin/release cut --if-needed")
   end
 
   it "pushes and opens PRs with RELEASE_TOKEN, since GitHub runs no checks on PRs the built-in token opens" do
-    expect(release_steps.map { |step| step.dig("env", "GH_TOKEN") }).to all(eq("${{ secrets.RELEASE_TOKEN }}"))
+    expect([ prepare, cut ].map { |job| release_step.(job).dig("env", "GH_TOKEN") }).to all(eq("${{ secrets.RELEASE_TOKEN }}"))
   end
 
-  it "never runs two release steps at once" do
-    expect(workflow.dig("concurrency", "cancel-in-progress")).to be(false)
+  it "queues each job behind its own earlier run, so a cut never waits behind a prepare or is cancelled by one" do
+    expect([ prepare, cut ].map { |job| job.dig("concurrency", "group") }).to eq(%w[next-release-prepare next-release-cut])
+    expect([ prepare, cut ].map { |job| job.dig("concurrency", "cancel-in-progress") }).to all(be(false))
   end
 end
