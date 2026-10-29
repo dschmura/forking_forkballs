@@ -10,4 +10,4 @@ env:
     RAILS_CREDENTIALS_ENV: staging
 
 volumes:
-  - "modelrails_base_staging_storage:/rails/storage"
+  - "forking_forkballs_staging_storage:/rails/storage"

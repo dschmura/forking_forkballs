@@ -1,0 +1,12 @@
+# Fork provenance — written by bin/fork. Do not gate on this file; live
+# state is derived from the repository. Committed so every clone inherits
+# the decisions: bin/setup reads `preset` into a teammate's .env, and
+# `template_baseline` answers "based on which template version?".
+---
+name: forking_forkballs
+product_name: Forking Forkballs
+preset: personal
+template_url: git@github.com:dschmura/modelrails_base.git
+template_baseline: 22dbdb1c488370d714f866afd3ea0f51c2445f77
+forked_at: '2026-10-29'
+fork_script_version: 1.0.0
