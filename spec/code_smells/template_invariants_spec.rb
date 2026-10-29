@@ -1851,6 +1851,7 @@ RSpec.describe "Template invariants" do
     end
 
     it "the Hot Cell docs sample keeps every volume deploy.yml already mounts" do
+      skip "fork — bin/fork renames deploy.yml's volumes and leaves the template's docs as they are" if root.join(".fork.yml").exist?
       doc = File.read(root.join("app/docs/developer/hot-cell.md"))
       sample = doc.scan(/^ *```yaml\n(.*?)^ *```/m).flatten.find { |block| block.include?("accessories:") }
       existing = YAML.safe_load(File.read(root.join("config/deploy.yml")), aliases: true, permitted_classes: [ Symbol ])["volumes"]
