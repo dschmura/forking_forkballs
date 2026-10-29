@@ -24,6 +24,7 @@ All notable changes to ModelRails are documented here, organized by phase.
 - `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.
 - A page with a sideways-scrolling table no longer scrolls sideways itself on a phone: `UI::ScrollAreaComponent` contains absolutely positioned content, such as screen-reader-only labels, that used to escape it and widen the page.
 - A fork's CI no longer fails on the Hot Cell docs check, which compared the template's docs with the fork's renamed `config/deploy.yml`.
+- A fork with a long app name no longer fails the activity ledger's phone-width accessibility check, which scored wherever opening a row left the page scrolled.
 
 ### Security
 
