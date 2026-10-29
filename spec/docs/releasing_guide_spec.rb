@@ -26,6 +26,23 @@ RSpec.describe "The releasing guide" do
     expect(source[/^## Hotfix\n.*?(?=^## )/m]).to match(/untagged/)
   end
 
+  it "maps what makes the flow run: the script, the workflows, the PR features and the switches" do
+    section = source[/^## What makes it run\n.*?(?=^## )/m].to_s
+
+    %w[bin/release ci.yml deploy.yml next_release.yml bin/branch-rules
+       AUTO_RELEASE RELEASE_TOKEN DEPLOY_STAGING DEPLOY_PRODUCTION].each do |lever|
+      expect(section).to include(lever), "#{lever} is missing from What makes it run"
+    end
+  end
+
+  it "lists every workflow bin/release reads among the files to change together" do
+    changing = source[/^## Changing the flow\n.*/m]
+
+    Rails.root.join("bin/release").read.scan(/[\w-]+\.yml/).uniq.each do |workflow|
+      expect(changing).to include(workflow)
+    end
+  end
+
   it "gives commands that run as written, with no placeholder for the repository" do
     expect(source).not_to include("OWNER/REPO")
   end
