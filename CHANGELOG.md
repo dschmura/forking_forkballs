@@ -4,6 +4,8 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+## v2026.10.29
+
 ### Added
 
 - `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release after any merge into `next` once staging is free, and cuts it once CI passes on `next`; `bin/release prepare --if-needed` and `cut --if-needed` stop quietly when there's nothing to do yet.
