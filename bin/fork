@@ -32,6 +32,7 @@ class ForkFlow
   TEMPLATE_MODULE = "ModelrailsBase"
   TEMPLATE_BRAND  = "ModelRails"
   FORK_FILE       = ".fork.yml"
+  CHANGELOG       = "CHANGELOG.md"
 
   # Anchored on a path separator so a fork of your own named e.g.
   # "my_modelrails_base" is never mistaken for the template and silently
@@ -105,7 +106,7 @@ class ForkFlow
   # Paths that reference the template by name forever, so the verify sweep must
   # not report them.
   TEMPLATE_OWNED_PATHS = [
-    %r{\Aapp/docs/}, %r{\Aspec/}, %r{\ACHANGELOG\.md\z}, %r{\AGemfile(\.lock)?\z},
+    %r{\Aapp/docs/}, %r{\Aspec/}, %r{\AGemfile(\.lock)?\z},
     %r{\Abin/}, %r{\A\.gitattributes\z}, %r{\Avendor/}, %r{\A\.fork\.yml\z}
   ].freeze
 
@@ -441,7 +442,10 @@ class ForkFlow
     @todos << "Name your nouns, if the product's aren't workspace/project: config/vocabulary.local.yml " \
               "(fork-owned — every template string follows, and so do yours when they say %{project}, not the word)."
 
-    commit!("Rename identity: #{title}", FORK_FILE, *RENAME_FILES)
+    act("start #{CHANGELOG} clean (the template's releases stay on its releases page; bin/sync links each one it brings in)")
+    atomic_write(path_to(CHANGELOG), "# Changelog\n\nAll notable changes to #{title} are documented here.\n\n## [Unreleased]\n") unless dry_run?
+
+    commit!("Rename identity: #{title}", FORK_FILE, CHANGELOG, *RENAME_FILES)
   end
 
   def step_preset!(preset)
