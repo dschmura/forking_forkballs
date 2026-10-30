@@ -316,6 +316,11 @@ in `next`. A release the fork names itself never takes a name the template
 has used. If the template is private and the token can't read it,
 `bin/release` stops and says so.
 
+**A shipped release's notes don't change.** CI runs `bin/release check`, which
+fails a PR that adds, removes or edits a line in a release section that has
+been tagged, and names the line. A late line belongs under `[Unreleased]`, and
+ships with the next release.
+
 ## Cut a release
 
 ```bash

@@ -19,7 +19,7 @@ class Release
 
   CLEAN_GIT_ENV = ::CleanGitEnv::HASH
   TEMPLATE = ".github/PULL_REQUEST_TEMPLATE/release.md"
-  USAGE = "usage: bin/release prepare | cut | ship <PR> <commit reviewed on staging> | merge-back"
+  USAGE = "usage: bin/release prepare | cut | ship <PR> <commit reviewed on staging> | merge-back | check"
   ONCE_READY = "once its checks pass and any required approval is given"
   BODY_LIMIT = 60_000
 
@@ -35,6 +35,7 @@ class Release
     when "cut"        then cut
     when "ship"       then ship(*args)
     when "merge-back" then merge_back_after_hotfix
+    when "check"      then check
     else raise Error, USAGE
     end
   end
@@ -124,6 +125,25 @@ class Release
   end
 
   private
+
+  def check
+    changelog = git("show", "HEAD:CHANGELOG.md")
+    changed = git("tag", "--list", "v*").lines(chomp: true).filter_map do |tag|
+      name = tag[/\Av(#{ReleaseChangelog::NAME})\z/, 1] or next
+      shipped = ReleaseChangelog.section(git("show", "#{tag}:CHANGELOG.md"), name)
+      now = ReleaseChangelog.section(changelog, name)
+      [ name, shipped.lines(chomp: true), now.lines(chomp: true) ] if shipped && now && now != shipped
+    end
+    raise Error, changed.map { |name, shipped, now| changed_notes(name, shipped, now) }.join("\n\n") if changed.any?
+
+    say("Shipped release notes are unchanged.")
+  end
+
+  def changed_notes(name, shipped, now)
+    lines = { "added" => now - shipped, "removed" => shipped - now }.flat_map { |how, ls| ls.map { |l| "  #{how}: #{l}" } }
+    "v#{name} has shipped, so its notes in CHANGELOG.md stay as tagged:\n#{lines.join("\n")}\n" \
+      "A new line belongs under ## [Unreleased]."
+  end
 
   def dry_run? = @opts[:dry_run]
   def say(msg) = puts(msg)
