@@ -477,8 +477,52 @@ RSpec.describe Release do
     end
   end
 
+  describe "check" do
+    def ship_named_release
+      setup_repo(next_changelog: named)
+      git("tag", "v2026.10.27")
+    end
+
+    it "passes while each tagged release's notes read as they did at the tag" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Next feature.\n"))
+      git("commit", "-q", "-am", "next work")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+
+    it "fails when a line lands in a shipped release, and names the line" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- A late fix.\n"))
+      git("commit", "-q", "-am", "a line in the wrong place")
+
+      expect { run_release("check") }
+        .to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A late fix\..*\[Unreleased\]/m)
+    end
+
+    it "fails when a line is removed from a shipped release" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", ""))
+      git("commit", "-q", "-am", "a line lost")
+
+      expect { run_release("check") }.to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A bug\./m)
+    end
+
+    it "leaves untagged releases alone: a named one waiting to ship, or one a fork inherited" do
+      setup_repo(next_changelog: named)
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- Added before the cut.\n"))
+      git("commit", "-q", "-am", "edit before shipping")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+  end
+
   describe "ship" do
-    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main" } }
+    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main", "headRefOid" => "abc1234#{'0' * 33}" } }
     let(:main_sha) { git("rev-parse", "origin/main") }
 
     before do
@@ -529,6 +573,14 @@ RSpec.describe Release do
       expect(remote_heads).to include("merge-back/2026.10.27")
     end
 
+    it "refuses an already-merged PR whose merged head isn't the reviewed commit" do
+      bin.join("merged").write("")
+
+      expect { run_release("ship", "42", "def5678") }.to raise_error(Release::Error, /merged at abc1234, not def5678/)
+      expect(calls).not_to include("release create")
+      expect(remote_heads).not_to include("merge-back/2026.10.27")
+    end
+
     context "when the PR is not a release into main" do
       let(:release_pr) { { "headRefName" => "feature/x", "baseRefName" => "next" } }
 
@@ -571,6 +623,17 @@ RSpec.describe Release do
         run_release("merge-back")
 
         expect(@output).to include("couldn't bring")
+      end
+    end
+
+    context "when the PR is already up to date" do
+      let(:gh_api) { "echo 'gh: There are no new commits on the base branch. (HTTP 422)' >&2; exit 1" }
+
+      it "doesn't warn" do
+        setup_repo
+        run_release("merge-back")
+
+        expect(@output).not_to include("couldn't bring")
       end
     end
   end
