@@ -27,6 +27,13 @@ module ReleaseChangelog
     "#{head}#{UNRELEASED}\n## v#{name}\n\n#{released}\n#{tail}"
   end
 
+  def add_unreleased(text, title, entries)
+    head, rest = text.split(UNRELEASED, 2)
+    raise Error, "CHANGELOG.md has no #{UNRELEASED.strip} section" if rest.nil?
+
+    "#{head}#{UNRELEASED}\n### #{title}\n\n#{entries.join("\n")}\n#{rest}"
+  end
+
   def named_release(text)
     text[/^## \[Unreleased\]\n.*?^## v(#{NAME})$/m, 1]
   end

@@ -129,7 +129,8 @@ Two things you'll notice afterwards, both intentional:
   real URL — it makes any accidental `git push upstream` fail loudly instead of
   writing to the template.
 - Your `main` tracks `origin/main` (your repo), so plain `git pull` stays inside
-  your app. Upstream only enters when you explicitly run `git merge upstream/main`.
+  your app. Upstream only enters when you run `bin/sync`
+  ([Pull upstream updates](#pull-upstream-updates)).
 
 Finally, record the cut point in the template repo — it answers "which template
 version is myapp based on?" forever:
@@ -443,23 +444,49 @@ orphaned pages across both maps automatically.
 
 ## Pull upstream updates
 
-### 1. Look before you merge
+```bash
+bin/sync
+```
+
+`bin/sync` brings the template's newest releases into your `next`, as a PR:
+
+1. It finds the template's releases that your `next` doesn't have yet.
+2. It merges the latest one on a `sync/template-v<name>` branch.
+3. It keeps your `CHANGELOG.md`, and adds one line under `[Unreleased]` for
+   each release it brings in, linking that release's notes on the template's
+   GitHub releases page.
+4. It pushes the branch and opens a PR into `next` that merges itself, with a
+   merge commit, once its checks pass. Merging it starts your next release
+   like any other PR.
+
+If `next` already has the template's latest release, it says so and stops.
+It needs a clean working tree, an `upstream` remote (`bin/setup` adds it) and
+the GitHub CLI, signed in.
+
+**Don't merge the template by hand.** Your changelog and the template's share a
+file but not their releases, and git's union merge files the template's lines
+into your shipped releases without a conflict. CI refuses that
+(`bin/release check`), and `bin/sync` exists so you never have to undo it.
+Merge sync PRs with a merge commit, never a squash: the merge is how the next
+`bin/sync` tells what you already have.
+
+### 1. Look before you sync
 
 ```bash
 git fetch upstream
-git log --oneline main..upstream/main                   # what's coming
-git log --diff-filter=R --stat main..upstream/main      # what moved — plan renames, don't discover them mid-merge
+git log --oneline origin/next..upstream/main                   # what's coming
+git log --diff-filter=R --stat origin/next..upstream/main      # what moved — plan renames, don't discover them mid-merge
 ```
 
-Read `CHANGELOG.md` on `upstream/main` first — breaking changes and migrations
-are called out under [Unreleased]. If a change sounds structural (schema,
-`deploy.yml`), read its PR before merging, not after.
+Read the template's release notes on its GitHub releases page: breaking changes
+and migrations are called out there. If a change sounds structural (schema,
+`deploy.yml`), read its PR before syncing, not after.
 
 Then check whether upstream touched files **you own** — those changes will NOT
 arrive through the merge (the driver keeps yours):
 
 ```bash
-git log --oneline main..upstream/main -- \
+git log --oneline origin/next..upstream/main -- \
   app/views/pages app/controllers/pages_controller.rb \
   config/locales/en/pages.en.yml config/locales/en/brand.en.yml \
   config/routes/app.rb config/markdowndocs_categories.local.yml \
@@ -470,18 +497,16 @@ git log --oneline main..upstream/main -- \
 If a commit there looks like a fix you want, cherry-pick it after the merge:
 `git cherry-pick <sha>`, then adapt it to your version of the file.
 
-### 2. Merge on a branch
+### 2. If it stops on conflicts
 
-```bash
-git checkout -b chore/upstream-sync-$(date +%F)
-git merge upstream/main
-```
-
-### 3. If you hit conflicts
+`bin/sync` stops and names the files, with `CHANGELOG.md` already done. Resolve
+each one, `git add` it, then run `bin/sync` again: it commits the merge, pushes
+and opens the PR.
 
 | Conflict in | Resolution |
 | ----------- | ---------- |
-| Fork-owned paths | Shouldn't happen — the driver keeps yours. If it does, the driver isn't active: `git merge --abort`, run `git config merge.ours.driver true`, merge again |
+| `CHANGELOG.md` | Never — `bin/sync` keeps yours before it stops |
+| Fork-owned paths | Shouldn't happen — the driver keeps yours. If it does, the driver isn't active: `git merge --abort`, run `git config merge.ours.driver true`, then `bin/sync` again |
 | Identity values (`config/deploy.yml` service/image/volumes, `config/application.rb` module) | Keep your names; take any structural changes around them |
 | `Gemfile` | Keep **both** sides' gems, then regenerate the lockfile |
 | `Gemfile.lock` | Never hand-merge: `git checkout --theirs Gemfile.lock`, then `bundle install`, commit the regenerated result |
@@ -497,27 +522,27 @@ A conflict looks like this — your side on top, upstream's below:
     primary_cta: "Start organizing your photos"
 =======
     primary_cta: "Get started free"
->>>>>>> upstream/main
+>>>>>>> 9f3c2e1 (the template's release)
 ```
 
 Decide which line the file should have (here it's your marketing copy — keep
 yours), delete the other line and all three marker lines, then `git add` the
 file. That's the whole skill; the doctrine table tells you which side to favor.
 
-### 4. Prove the merge
+### 3. Prove it
+
+CI runs the suite on the PR. Locally, on the sync branch:
 
 ```bash
 bin/rails db:migrate    # upstream may ship migrations
-bundle exec rspec       # full suite green before the PR
+bundle exec rspec
 ```
-
-Open a pull request into your app's main branch like any other change.
 
 ### If something looks wrong after the merge
 
 - **A fork-owned file changed unexpectedly** — the driver wasn't active during
   the merge. Restore your version from before the sync:
-  `git restore --source=main <path>`, commit, then fix the driver config.
+  `git restore --source=origin/next <path>`, commit, then fix the driver config.
 - **Bundler errors** — regenerate instead of debugging the lockfile:
   `git checkout --theirs Gemfile.lock && bundle install`.
 - **Tests fail** — run the failing spec alone, then
@@ -526,9 +551,9 @@ Open a pull request into your app's main branch like any other change.
 
 ### Cadence
 
-Merge after each meaningful upstream change — don't bank up months of drift.
-Small frequent merges conflict less than one big annual one; if upstream is
-busy, a fixed weekly sync keeps every merge boring.
+Run `bin/sync` often — don't bank up months of drift. Small frequent merges
+conflict less than one big annual one; if upstream is busy, a fixed weekly
+sync keeps every merge boring.
 
 ## Contribute a fix back
 

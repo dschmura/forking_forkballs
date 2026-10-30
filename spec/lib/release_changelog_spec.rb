@@ -87,6 +87,22 @@ RSpec.describe ReleaseChangelog do
     end
   end
 
+  describe ".add_unreleased" do
+    it "puts the entries first under [Unreleased], in a subsection of their own, leaving the rest as it was" do
+      added = described_class.add_unreleased(changelog, "Changed", [ "- New one." ])
+
+      expect(added).to start_with("# Changelog\n\n## [Unreleased]\n\n### Changed\n\n- New one.\n\n### Added\n")
+      expect(added.delete_prefix(added[/\A.*?- New one\.\n/m])).to eq(changelog.split("## [Unreleased]\n", 2).last)
+    end
+
+    it "keeps a blank line before the next release when [Unreleased] was empty" do
+      named = described_class.name_release(changelog, "2026.10.27")
+
+      expect(described_class.add_unreleased(named, "Changed", [ "- New one." ]))
+        .to include("## [Unreleased]\n\n### Changed\n\n- New one.\n\n## v2026.10.27\n")
+    end
+  end
+
   describe ".names" do
     it "offers the day, then -2, -3 and onward" do
       expect(described_class.names(Date.new(2026, 10, 27)).first(3)).to eq(%w[2026.10.27 2026.10.27-2 2026.10.27-3])
