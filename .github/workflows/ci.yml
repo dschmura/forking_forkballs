@@ -81,6 +81,10 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: bin/comment-block-check --range "origin/${BASE_REF}...HEAD"
 
+      - name: Refuse changes to shipped release notes
+        if: ${{ !cancelled() }}
+        run: bin/release check
+
       - name: Check markdown
         if: ${{ !cancelled() }}
         run: bundle exec rake markdown:check

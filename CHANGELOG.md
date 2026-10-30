@@ -4,6 +4,10 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+### Changed
+
+- Brings in the template's release v2026.10.30: https://github.com/dschmura/modelrails_base/releases/tag/v2026.10.30
+
 ## v2026.10.30
 
 ### Added
