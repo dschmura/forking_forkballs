@@ -4,6 +4,8 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+## v2026.10.29
+
 ### Added
 
 - `.github/workflows/next_release.yml`, off until `AUTO_RELEASE` is `true`, names the next release after any merge into `next` once staging is free, and cuts it once CI passes on `next`; `bin/release prepare --if-needed` and `cut --if-needed` stop quietly when there's nothing to do yet.
@@ -22,6 +24,14 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 - `bin/release cut` cuts `next` as it stood the last time `[Unreleased]` was empty, so a PR merged after `prepare` waits for the next release instead of shipping without a line in "What ships"; it refuses, listing the lines, when they landed under `[Unreleased]` while the changelog PR was open.
 - `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.
+- A page with a sideways-scrolling table no longer scrolls sideways itself on a phone: `UI::ScrollAreaComponent` contains absolutely positioned content, such as screen-reader-only labels, that used to escape it and widen the page.
+- A fork's CI no longer fails on the Hot Cell docs check, which compared the template's docs with the fork's renamed `config/deploy.yml`.
+- A fork with a long app name no longer fails the activity ledger's phone-width accessibility check, which scored wherever opening a row left the page scrolled.
+- In a fork, `bin/release` counts the template's releases as shipped, reading the template's tags through `.fork.yml`, so `prepare` and `cut` no longer wait on or cut a release the fork never made.
+
+### Security
+
+- In a fork clone, `gh` acts on the fork, not the template: `bin/release` and `bin/branch-rules` target `origin`'s repository, and `bin/fork` and `bin/setup` make `origin` `gh`'s default. `gh` prefers a remote named `upstream`, which `bin/fork` points at the template.
 
 ## v2026.10.27
 

@@ -9,6 +9,7 @@ RSpec.describe Release do
   let(:clone) { workdir.join("app") }
   let(:bin) { workdir.join("bin") }
   let(:log) { workdir.join("gh.log") }
+  let(:repos_log) { workdir.join("gh_repo.log") }
   let(:today) { Date.new(2026, 10, 27) }
   let(:gh_create) { 'echo "https://github.com/me/app/pull/42"' }
   let(:gh_merge) { "exit 0" }
@@ -62,6 +63,9 @@ RSpec.describe Release do
   def setup_repo(next_changelog: changelog)
     git("init", "-q", "--bare", "-b", "main", origin.to_s, dir: workdir)
     git("clone", "-q", origin.to_s, clone.to_s, dir: workdir)
+    git("remote", "set-url", "origin", "git@github.com:me/app.git")
+    git("config", "url.#{origin}.insteadOf", "git@github.com:me/app.git")
+    git("remote", "add", "upstream", "git@github.com:me/template.git")
     clone.join(".github/PULL_REQUEST_TEMPLATE").mkpath
     clone.join(".github/PULL_REQUEST_TEMPLATE/release.md")
          .write(Rails.root.join(".github/PULL_REQUEST_TEMPLATE/release.md").read)
@@ -81,6 +85,7 @@ RSpec.describe Release do
     bin.join("gh").write(<<~SH)
       #!/bin/sh
       echo "CALL $*" >> "#{log}"
+      echo "$GH_REPO" >> "#{repos_log}"
       case "$*" in *"-file -"*) echo "BODY<<" >> "#{log}"; cat >> "#{log}"; echo ">>BODY" >> "#{log}" ;; esac
       case "$*" in
         "pr create"*) #{gh_create} ;;
@@ -114,6 +119,24 @@ RSpec.describe Release do
 
   def calls = log.exist? ? log.read : ""
   def remote_heads = git("ls-remote", "--heads", "origin").lines.map { |l| l.split.last.delete_prefix("refs/heads/") }
+
+  describe "the repository it acts on" do
+    it "is origin's, not upstream's, which gh would pick" do
+      setup_repo(next_changelog: named)
+      run_release("cut")
+
+      expect(repos_log.readlines(chomp: true)).to all(eq("me/app")).and be_any
+    end
+
+    it "is never guessed: with origin outside GitHub it stops before acting" do
+      setup_repo(next_changelog: named)
+      git("remote", "set-url", "origin", origin.to_s)
+
+      expect { run_release("cut") }.to raise_error(Release::Error, /origin isn't a GitHub repository/)
+      expect(calls).to be_empty
+      expect(remote_heads).not_to include("release/2026.10.27")
+    end
+  end
 
   describe "naming" do
     before { setup_repo }
@@ -391,6 +414,66 @@ RSpec.describe Release do
       git("push", "-q", "origin", "HEAD:main")
 
       expect { run_release("cut") }.to raise_error(Release::Error, /main isn't in next yet/)
+    end
+  end
+
+  describe "in a fork, whose changelog carries the template's releases" do
+    let(:template) { workdir.join("template.git") }
+    let(:with_fork_entry) { named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- A fork feature.\n") }
+
+    # The template tags v2026.10.27 at `tagged`; next gains the .fork.yml that bin/fork commits.
+    def fork_from_template(tagged: "origin/next", template_url: "git@github.com:me/template.git")
+      git("init", "-q", "--bare", template.to_s, dir: workdir)
+      git("config", "url.#{template}.insteadOf", "https://github.com/me/template.git")
+      git("push", "-q", template.to_s, "#{git('rev-parse', tagged)}:refs/tags/v2026.10.27")
+      clone.join(".fork.yml").write({ "name" => "app", "template_url" => template_url }.to_yaml)
+      git("add", ".fork.yml")
+      git("commit", "-q", "-m", "fork")
+      git("push", "-q", "origin", "HEAD:next")
+    end
+
+    def commit_outside_next = git("commit-tree", "HEAD^{tree}", "-m", "the template's own")
+
+    it "starts its own release past one the template shipped" do
+      setup_repo(next_changelog: with_fork_entry)
+      fork_from_template
+      run_release("prepare", if_needed: true, dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "has nothing to cut when the release next names is one the template shipped" do
+      setup_repo(next_changelog: named)
+      fork_from_template
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "still cuts its own release when the template tagged the same name on a commit next doesn't have" do
+      setup_repo(next_changelog: named)
+      fork_from_template(tagged: commit_outside_next)
+      run_release("cut", if_needed: true)
+
+      expect(remote_heads).to include("release/2026.10.27")
+    end
+
+    it "never names a release after one the template tagged" do
+      setup_repo
+      fork_from_template(tagged: commit_outside_next)
+      run_release("prepare", dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "stops, rather than guess, when it can't read the template's tags" do
+      setup_repo(next_changelog: named)
+      fork_from_template(template_url: "git@github.com:me/private-template.git")
+      git("config", "url.#{workdir.join('unreadable.git')}.insteadOf", "https://github.com/me/private-template.git")
+
+      expect { run_release("cut", if_needed: true) }
+        .to raise_error(Release::Error, %r{can't read the tags of me/private-template})
     end
   end
 
