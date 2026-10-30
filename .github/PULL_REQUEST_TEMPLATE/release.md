@@ -1,4 +1,4 @@
-<!-- A release/<date> branch into main. The guide: /docs/developer/releasing -->
+<!-- A release/<name> branch into main. The guide: /docs/developer/releasing -->
 
 ## Release
 
@@ -18,5 +18,5 @@
 The merge button doesn't check what was reviewed. This does, refusing if the branch moved since, then publishes the release and merges `main` back into `next`:
 
 ```bash
-bin/release ship <this PR> <the commit above>
+bin/release ship <this PR> <commit reviewed on staging>
 ```

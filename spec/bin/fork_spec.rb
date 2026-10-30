@@ -55,6 +55,7 @@ RSpec.describe ForkFlow do
       # .env is gitignored in the real template; without this the fixture's own
       # .env writes would dirty the tree and trip the preflight.
       ".gitignore" => ".env\n",
+      "CHANGELOG.md" => "# Changelog\n\n## [Unreleased]\n\n### Fixed\n\n- A template fix.\n\n## v2026.10.27\n\n- Template history.\n",
       "config/application.rb" => "module ModelrailsBase\n  class Application < Rails::Application\n  end\nend\n",
       "config/deploy.yml" => "service: modelrails_base\nimage: you/modelrails_base\n",
       "config/deploy.staging.yml" => "volumes:\n  - \"modelrails_base_staging_storage:/rails/storage\"\n",
@@ -371,6 +372,14 @@ RSpec.describe ForkFlow do
       expect(config["template_baseline"]).to match(/\A[0-9a-f]{40}\z/)
     end
 
+    it "starts the fork's changelog clean, in the rename commit: the template's releases aren't the fork's" do
+      run_fork(name: "my_app", yes: true)
+
+      expect(repo.join("CHANGELOG.md").read)
+        .to eq("# Changelog\n\nAll notable changes to My App are documented here.\n\n## [Unreleased]\n")
+      expect(capture_git("show", "--name-only", "--pretty=", "HEAD")).to include("CHANGELOG.md")
+    end
+
     it "commits the rename as one findable commit" do
       run_fork(name: "my_app", yes: true)
 
@@ -409,6 +418,19 @@ RSpec.describe ForkFlow do
       run_fork(name: "my_app", origin: "git@github.com:me/my_app.git", yes: true)
 
       expect(capture_git("remote", "get-url", "origin")).to eq("git@github.com:me/my_app.git")
+    end
+
+    it "makes the given origin gh's default, since gh would otherwise pick upstream: the template" do
+      run_fork(name: "my_app", origin: "git@github.com:me/my_app.git", yes: true)
+
+      expect(capture_git("config", "--get", "remote.origin.gh-resolved")).to eq("base")
+    end
+
+    it "makes an origin that was already there gh's default too" do
+      git("remote", "set-url", "origin", "git@github.com:me/my_app.git")
+      run_fork(name: "my_app", yes: true)
+
+      expect(capture_git("config", "--get", "remote.origin.gh-resolved")).to eq("base")
     end
 
     # Anchoring matters: an unanchored pattern matches "me/not_modelrails_base",

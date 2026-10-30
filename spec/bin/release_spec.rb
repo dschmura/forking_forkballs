@@ -9,10 +9,12 @@ RSpec.describe Release do
   let(:clone) { workdir.join("app") }
   let(:bin) { workdir.join("bin") }
   let(:log) { workdir.join("gh.log") }
+  let(:repos_log) { workdir.join("gh_repo.log") }
   let(:today) { Date.new(2026, 10, 27) }
   let(:gh_create) { 'echo "https://github.com/me/app/pull/42"' }
   let(:gh_merge) { "exit 0" }
   let(:gh_api) { "exit 0" }
+  let(:gh_runs) { %q(echo '[{"status":"completed","conclusion":"success"}]') }
   let(:changelog) do
     <<~MD
       # Changelog
@@ -61,6 +63,9 @@ RSpec.describe Release do
   def setup_repo(next_changelog: changelog)
     git("init", "-q", "--bare", "-b", "main", origin.to_s, dir: workdir)
     git("clone", "-q", origin.to_s, clone.to_s, dir: workdir)
+    git("remote", "set-url", "origin", "git@github.com:me/app.git")
+    git("config", "url.#{origin}.insteadOf", "git@github.com:me/app.git")
+    git("remote", "add", "upstream", "git@github.com:me/template.git")
     clone.join(".github/PULL_REQUEST_TEMPLATE").mkpath
     clone.join(".github/PULL_REQUEST_TEMPLATE/release.md")
          .write(Rails.root.join(".github/PULL_REQUEST_TEMPLATE/release.md").read)
@@ -80,6 +85,7 @@ RSpec.describe Release do
     bin.join("gh").write(<<~SH)
       #!/bin/sh
       echo "CALL $*" >> "#{log}"
+      echo "$GH_REPO" >> "#{repos_log}"
       case "$*" in *"-file -"*) echo "BODY<<" >> "#{log}"; cat >> "#{log}"; echo ">>BODY" >> "#{log}" ;; esac
       case "$*" in
         "pr create"*) #{gh_create} ;;
@@ -87,6 +93,7 @@ RSpec.describe Release do
         "pr view"*) if [ -f "#{bin}/merged" ]; then cat "#{bin}/merged.json"; else cat "#{bin}/open.json"; fi ;;
         "pr merge"*"--match-head-commit"*) ( #{gh_merge} ); s=$?; [ $s = 0 ] && touch "#{bin}/merged"; exit $s ;;
         "api -X PUT"*) #{gh_api} ;;
+        "run list"*) #{gh_runs} ;;
         *) : ;;
       esac
     SH
@@ -112,6 +119,24 @@ RSpec.describe Release do
 
   def calls = log.exist? ? log.read : ""
   def remote_heads = git("ls-remote", "--heads", "origin").lines.map { |l| l.split.last.delete_prefix("refs/heads/") }
+
+  describe "the repository it acts on" do
+    it "is origin's, not upstream's, which gh would pick" do
+      setup_repo(next_changelog: named)
+      run_release("cut")
+
+      expect(repos_log.readlines(chomp: true)).to all(eq("me/app")).and be_any
+    end
+
+    it "is never guessed: with origin outside GitHub it stops before acting" do
+      setup_repo(next_changelog: named)
+      git("remote", "set-url", "origin", origin.to_s)
+
+      expect { run_release("cut") }.to raise_error(Release::Error, /origin isn't a GitHub repository/)
+      expect(calls).to be_empty
+      expect(remote_heads).not_to include("release/2026.10.27")
+    end
+  end
 
   describe "naming" do
     before { setup_repo }
@@ -172,6 +197,47 @@ RSpec.describe Release do
       expect(remote_heads).to contain_exactly("main", "next")
     end
 
+    it "refuses while an earlier changelog PR hasn't merged" do
+      setup_repo
+      git("push", "-q", "origin", "origin/next:refs/heads/changelog/2026.10.26")
+
+      expect { run_release("prepare") }.to raise_error(Release::Error, %r{changelog/2026\.10\.26 hasn't merged})
+      expect(remote_heads).not_to include("changelog/2026.10.27")
+    end
+
+    it "starts no release under --if-needed when nothing is under [Unreleased], and says so" do
+      setup_repo(next_changelog: named)
+      git("push", "-q", "origin", "main:refs/tags/v2026.10.27")
+      run_release("prepare", if_needed: true)
+
+      expect(@output).to include("Nothing under [Unreleased] on next")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "starts no release under --if-needed while one is under way, and says which" do
+      setup_repo(next_changelog: named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Later.\n"))
+      run_release("prepare", if_needed: true)
+
+      expect(@output).to include("v2026.10.27 is named but hasn't shipped, so the next release waits for it")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "starts no release under --if-needed while a changelog PR is waiting to merge" do
+      setup_repo
+      git("push", "-q", "origin", "origin/next:refs/heads/changelog/2026.10.27")
+      run_release("prepare", if_needed: true)
+
+      expect(@output).to include("changelog/2026.10.27 hasn't merged")
+      expect(calls).not_to include("pr create")
+    end
+
+    it "names the release as usual under --if-needed when [Unreleased] has entries" do
+      setup_repo
+      run_release("prepare", if_needed: true)
+
+      expect(remote_heads).to include("changelog/2026.10.27")
+    end
+
     it "names the next release once the last one has shipped" do
       setup_repo(next_changelog: named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Later.\n"))
       git("push", "-q", "origin", "main:refs/tags/v2026.10.27")
@@ -184,8 +250,16 @@ RSpec.describe Release do
   describe "cut" do
     let(:with_later_entry) { named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Landed after prepare.\n") }
 
+    def land_on_next(changelog: nil, file: nil)
+      clone.join("CHANGELOG.md").write(changelog) if changelog
+      clone.join(file).write("#{file}\n") if file
+      git("add", "-A")
+      git("commit", "-q", "-m", "landed on next")
+      git("push", "-q", "origin", "HEAD:next")
+    end
+
     it "pushes release/<name> at next and opens the release PR with what ships" do
-      setup_repo(next_changelog: with_later_entry)
+      setup_repo(next_changelog: named)
       run_release("cut")
 
       expect(git("rev-parse", "origin/release/2026.10.27")).to eq(git("rev-parse", "origin/next"))
@@ -193,7 +267,95 @@ RSpec.describe Release do
       body = calls[/BODY<<\n(.*?)>>BODY/m, 1]
       expect(body).to include("- Branch: `release/2026.10.27`")
       expect(body).to include("- First feature.\n- Second feature.")
-      expect(body).not_to include("Landed after prepare")
+    end
+
+    it "cuts before the first PR that landed a changelog line after the release was named" do
+      setup_repo(next_changelog: named)
+      named_at = git("rev-parse", "origin/next")
+      land_on_next(changelog: with_later_entry, file: "later.rb")
+      run_release("cut")
+
+      expect(git("rev-parse", "origin/release/2026.10.27")).to eq(named_at)
+      expect(calls[/BODY<<\n(.*?)>>BODY/m, 1]).not_to include("Landed after prepare")
+      expect(@output).to include("1 later commit on next waits for the next release")
+    end
+
+    it "takes along what landed after the name without a changelog line" do
+      setup_repo(next_changelog: named)
+      land_on_next(file: "docs.md")
+      run_release("cut")
+
+      expect(git("rev-parse", "origin/release/2026.10.27")).to eq(git("rev-parse", "origin/next"))
+    end
+
+    it "refuses when lines landed under [Unreleased] before the release was named, and lists them" do
+      setup_repo(next_changelog: with_later_entry)
+
+      expect { run_release("cut") }.to raise_error(Release::Error, /- Landed after prepare\..*## v2026\.10\.27/m)
+      expect(remote_heads).not_to include("release/2026.10.27")
+    end
+
+    it "asks CI about the commit it cuts" do
+      setup_repo(next_changelog: named)
+      run_release("cut")
+
+      expect(calls).to include("CALL run list --workflow ci.yml --commit #{git("rev-parse", "origin/next")} --event push")
+    end
+
+    context "when CI failed on the commit it would cut" do
+      let(:gh_runs) { %q(echo '[{"status":"completed","conclusion":"failure"}]') }
+
+      it "refuses, and says how a fix joins the release" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI failed on \h{7}.*## v2026\.10\.27/m)
+        expect(remote_heads).not_to include("release/2026.10.27")
+      end
+    end
+
+    context "when CI hasn't finished on the commit it would cut" do
+      let(:gh_runs) { %q(echo '[{"status":"in_progress","conclusion":""}]') }
+
+      it "refuses until it passes" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI hasn't passed on \h{7} yet/)
+        expect(remote_heads).not_to include("release/2026.10.27")
+      end
+    end
+
+    context "when CI hasn't run on the commit it would cut" do
+      let(:gh_runs) { "echo '[]'" }
+
+      it "refuses until it passes" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /CI hasn't passed on \h{7} yet/)
+      end
+    end
+
+    it "cuts nothing under --if-needed when next names no release waiting to be cut, and says so" do
+      setup_repo
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "cuts nothing under --if-needed once the named release is cut" do
+      setup_repo(next_changelog: named)
+      git("push", "-q", "origin", "origin/next:refs/heads/release/2026.10.27")
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(calls).not_to include("pr create")
+    end
+
+    it "cuts as usual under --if-needed when a named release is waiting" do
+      setup_repo(next_changelog: named)
+      run_release("cut", if_needed: true)
+
+      expect(remote_heads).to include("release/2026.10.27")
     end
 
     it "refuses until prepare's changelog has landed on next" do
@@ -216,6 +378,36 @@ RSpec.describe Release do
       expect(remote_heads).not_to include("release/2026.10.27")
     end
 
+    it "picks up its own branch when a stopped run already pushed it" do
+      setup_repo(next_changelog: named)
+      git("push", "-q", "origin", "origin/next:refs/heads/release/2026.10.27")
+      run_release("cut")
+
+      expect(calls).to include("CALL pr create --base main --head release/2026.10.27")
+    end
+
+    context "when GitHub refuses to open the PR for a reason other than an open one" do
+      let(:gh_create) { "echo 'Body is too long (maximum is 65536 characters)' >&2; exit 1" }
+
+      it "reports GitHub's reason" do
+        setup_repo(next_changelog: named)
+
+        expect { run_release("cut") }.to raise_error(Release::Error, /Body is too long/)
+        expect(calls).not_to include("--jq .url")
+      end
+    end
+
+    it "trims what ships to fit GitHub's limit and points to the full section" do
+      long = named.sub("- First feature.\n", "- First feature.\n" + ("- An entry long enough to add up quickly across a release.\n" * 1500))
+      setup_repo(next_changelog: long)
+      run_release("cut")
+
+      body = calls[/BODY<<\n(.*?)>>BODY/m, 1]
+      expect(body.length).to be <= Release::BODY_LIMIT
+      expect(body).to include("CHANGELOG.md on release/2026.10.27")
+      expect(body).to include("bin/release ship")
+    end
+
     it "refuses until the last merge-back has landed on next" do
       setup_repo(next_changelog: named)
       git("commit", "-q", "--allow-empty", "-m", "hotfix")
@@ -225,8 +417,112 @@ RSpec.describe Release do
     end
   end
 
+  describe "in a fork, whose changelog carries the template's releases" do
+    let(:template) { workdir.join("template.git") }
+    let(:with_fork_entry) { named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- A fork feature.\n") }
+
+    # The template tags v2026.10.27 at `tagged`; next gains the .fork.yml that bin/fork commits.
+    def fork_from_template(tagged: "origin/next", template_url: "git@github.com:me/template.git")
+      git("init", "-q", "--bare", template.to_s, dir: workdir)
+      git("config", "url.#{template}.insteadOf", "https://github.com/me/template.git")
+      git("push", "-q", template.to_s, "#{git('rev-parse', tagged)}:refs/tags/v2026.10.27")
+      clone.join(".fork.yml").write({ "name" => "app", "template_url" => template_url }.to_yaml)
+      git("add", ".fork.yml")
+      git("commit", "-q", "-m", "fork")
+      git("push", "-q", "origin", "HEAD:next")
+    end
+
+    def commit_outside_next = git("commit-tree", "HEAD^{tree}", "-m", "the template's own")
+
+    it "starts its own release past one the template shipped" do
+      setup_repo(next_changelog: with_fork_entry)
+      fork_from_template
+      run_release("prepare", if_needed: true, dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "has nothing to cut when the release next names is one the template shipped" do
+      setup_repo(next_changelog: named)
+      fork_from_template
+      run_release("cut", if_needed: true)
+
+      expect(@output).to include("Nothing to cut")
+      expect(remote_heads).to contain_exactly("main", "next")
+    end
+
+    it "still cuts its own release when the template tagged the same name on a commit next doesn't have" do
+      setup_repo(next_changelog: named)
+      fork_from_template(tagged: commit_outside_next)
+      run_release("cut", if_needed: true)
+
+      expect(remote_heads).to include("release/2026.10.27")
+    end
+
+    it "never names a release after one the template tagged" do
+      setup_repo
+      fork_from_template(tagged: commit_outside_next)
+      run_release("prepare", dry_run: true)
+
+      expect(@output).to include("== Prepare v2026.10.27-2 ==")
+    end
+
+    it "stops, rather than guess, when it can't read the template's tags" do
+      setup_repo(next_changelog: named)
+      fork_from_template(template_url: "git@github.com:me/private-template.git")
+      git("config", "url.#{workdir.join('unreadable.git')}.insteadOf", "https://github.com/me/private-template.git")
+
+      expect { run_release("cut", if_needed: true) }
+        .to raise_error(Release::Error, %r{can't read the tags of me/private-template})
+    end
+  end
+
+  describe "check" do
+    def ship_named_release
+      setup_repo(next_changelog: named)
+      git("tag", "v2026.10.27")
+    end
+
+    it "passes while each tagged release's notes read as they did at the tag" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Next feature.\n"))
+      git("commit", "-q", "-am", "next work")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+
+    it "fails when a line lands in a shipped release, and names the line" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- A late fix.\n"))
+      git("commit", "-q", "-am", "a line in the wrong place")
+
+      expect { run_release("check") }
+        .to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A late fix\..*\[Unreleased\]/m)
+    end
+
+    it "fails when a line is removed from a shipped release" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", ""))
+      git("commit", "-q", "-am", "a line lost")
+
+      expect { run_release("check") }.to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A bug\./m)
+    end
+
+    it "leaves untagged releases alone: a named one waiting to ship, or one a fork inherited" do
+      setup_repo(next_changelog: named)
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- Added before the cut.\n"))
+      git("commit", "-q", "-am", "edit before shipping")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+  end
+
   describe "ship" do
-    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main" } }
+    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main", "headRefOid" => "abc1234#{'0' * 33}" } }
     let(:main_sha) { git("rev-parse", "origin/main") }
 
     before do
@@ -254,6 +550,19 @@ RSpec.describe Release do
       end
     end
 
+    it "trims the release notes to fit GitHub's limit" do
+      long = named.sub("- First feature.\n", "- First feature.\n" + ("- An entry long enough to add up quickly across a release.\n" * 2500))
+      clone.join("CHANGELOG.md").write(long)
+      git("commit", "-q", "-am", "long")
+      git("push", "-q", "origin", "HEAD:main")
+      mark_merged(release_pr, git("rev-parse", "HEAD"))
+      run_release("ship", "42", "abc1234")
+
+      notes = calls[/CALL release create.*?BODY<<\n(.*?)>>BODY/m, 1]
+      expect(notes.length).to be <= Release::BODY_LIMIT
+      expect(notes).to include("CHANGELOG.md")
+    end
+
     it "skips what a stopped run already did when run again" do
       bin.join("merged").write("")
       git("push", "-q", "origin", "main:refs/tags/v2026.10.27")
@@ -262,6 +571,14 @@ RSpec.describe Release do
       expect(calls).not_to include("--match-head-commit")
       expect(calls).not_to include("release create")
       expect(remote_heads).to include("merge-back/2026.10.27")
+    end
+
+    it "refuses an already-merged PR whose merged head isn't the reviewed commit" do
+      bin.join("merged").write("")
+
+      expect { run_release("ship", "42", "def5678") }.to raise_error(Release::Error, /merged at abc1234, not def5678/)
+      expect(calls).not_to include("release create")
+      expect(remote_heads).not_to include("merge-back/2026.10.27")
     end
 
     context "when the PR is not a release into main" do
@@ -306,6 +623,17 @@ RSpec.describe Release do
         run_release("merge-back")
 
         expect(@output).to include("couldn't bring")
+      end
+    end
+
+    context "when the PR is already up to date" do
+      let(:gh_api) { "echo 'gh: There are no new commits on the base branch. (HTTP 422)' >&2; exit 1" }
+
+      it "doesn't warn" do
+        setup_repo
+        run_release("merge-back")
+
+        expect(@output).not_to include("couldn't bring")
       end
     end
   end
