@@ -522,7 +522,7 @@ RSpec.describe Release do
   end
 
   describe "ship" do
-    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main" } }
+    let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main", "headRefOid" => "abc1234#{'0' * 33}" } }
     let(:main_sha) { git("rev-parse", "origin/main") }
 
     before do
@@ -571,6 +571,14 @@ RSpec.describe Release do
       expect(calls).not_to include("--match-head-commit")
       expect(calls).not_to include("release create")
       expect(remote_heads).to include("merge-back/2026.10.27")
+    end
+
+    it "refuses an already-merged PR whose merged head isn't the reviewed commit" do
+      bin.join("merged").write("")
+
+      expect { run_release("ship", "42", "def5678") }.to raise_error(Release::Error, /merged at abc1234, not def5678/)
+      expect(calls).not_to include("release create")
+      expect(remote_heads).not_to include("merge-back/2026.10.27")
     end
 
     context "when the PR is not a release into main" do

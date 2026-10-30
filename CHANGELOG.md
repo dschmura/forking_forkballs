@@ -23,6 +23,7 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 - CI fails a PR that changes the notes of a release already tagged, naming the line, so a changelog line merged into a shipped section can't go unnoticed (`bin/release check`).
 - `bin/release` no longer warns that it couldn't bring a merge-back PR up to date when that PR already was.
+- `bin/release ship` refuses to publish a release PR merged on GitHub unless its branch was at the commit reviewed on staging.
 - In a fork, the devcontainer comes up: it trusts its mounted checkout, so `bin/setup` can add the `upstream` remote instead of git refusing with "dubious ownership".
 - `bin/release cut` cuts `next` as it stood the last time `[Unreleased]` was empty, so a PR merged after `prepare` waits for the next release instead of shipping without a line in "What ships"; it refuses, listing the lines, when they landed under `[Unreleased]` while the changelog PR was open.
 - `/docs/developer/releasing` says a reviewer still approves each PR on a team, that hotfixes ship untagged, when to run `cut`, how to hold back a squash-merged PR, and gives emergency commands that run as written.

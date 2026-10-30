@@ -422,6 +422,9 @@ If any step stops partway, run the same command again. It skips the merge
 when the PR is already merged, skips publishing when `v<name>` exists, and
 reuses a merge-back branch and PR that are already open.
 
+If the PR was merged on GitHub instead, `ship` still checks the merge. It
+refuses to publish when the merged branch wasn't at the commit you name.
+
 ## Merge main back into next
 
 `ship` does this itself. After a hotfix, run:

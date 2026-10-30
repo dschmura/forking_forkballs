@@ -97,6 +97,9 @@ class Release
     return dry("merge PR #{pr} at #{sha}, publish release v#{name}, and queue the merge-back into next") if dry_run?
 
     if info["state"] == "MERGED"
+      merged = info["headRefOid"]
+      raise Error, "PR #{pr} was merged at #{merged[0, 7]}, not #{sha}, the commit reviewed on staging" unless merged.start_with?(sha)
+
       say("  ✓ PR #{pr} already merged")
     else
       gh("pr", "merge", pr, "--merge", "--match-head-commit", sha)
@@ -173,7 +176,7 @@ class Release
 
     YAML.safe_load(git("show", "origin/next:.fork.yml")).to_h["template_url"].to_s[GithubOrigin::URL, :repo]
   end
-  def pr_info(pr) = JSON.parse(gh("pr", "view", pr, "--json", "state,headRefName,baseRefName,mergeCommit"))
+  def pr_info(pr) = JSON.parse(gh("pr", "view", pr, "--json", "state,headRefName,headRefOid,baseRefName,mergeCommit"))
 
   def release_under_way(changelog)
     named = ReleaseChangelog.named_release(changelog)
