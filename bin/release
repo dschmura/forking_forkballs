@@ -119,8 +119,9 @@ class Release
 
     url = propose(branch, at: git("rev-parse", "origin/main"), base: "next", title: "Merge main back into next after #{after}",
                   body: "Brings `main` back into `next` after #{after}. Merge with a merge commit.\n", auto_merge: true)
-    _, updated = gh("api", "-X", "PUT", "repos/{owner}/{repo}/pulls/#{url.split('/').last}/update-branch", status: true)
-    say("  ! GitHub couldn't bring #{url} up to date; press Update branch on it") unless updated
+    out, updated = gh("api", "-X", "PUT", "repos/{owner}/{repo}/pulls/#{url.split('/').last}/update-branch", status: true)
+    already_current = out.include?("no new commits on the base branch")
+    say("  ! GitHub couldn't bring #{url} up to date; press Update branch on it") unless updated || already_current
     say("  → #{url}, merging into next #{ONCE_READY}")
   end
 

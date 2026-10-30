@@ -617,5 +617,16 @@ RSpec.describe Release do
         expect(@output).to include("couldn't bring")
       end
     end
+
+    context "when the PR is already up to date" do
+      let(:gh_api) { "echo 'gh: There are no new commits on the base branch. (HTTP 422)' >&2; exit 1" }
+
+      it "doesn't warn" do
+        setup_repo
+        run_release("merge-back")
+
+        expect(@output).not_to include("couldn't bring")
+      end
+    end
   end
 end
