@@ -477,6 +477,50 @@ RSpec.describe Release do
     end
   end
 
+  describe "check" do
+    def ship_named_release
+      setup_repo(next_changelog: named)
+      git("tag", "v2026.10.27")
+    end
+
+    it "passes while each tagged release's notes read as they did at the tag" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("## [Unreleased]\n", "## [Unreleased]\n\n### Added\n\n- Next feature.\n"))
+      git("commit", "-q", "-am", "next work")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+
+    it "fails when a line lands in a shipped release, and names the line" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- A late fix.\n"))
+      git("commit", "-q", "-am", "a line in the wrong place")
+
+      expect { run_release("check") }
+        .to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A late fix\..*\[Unreleased\]/m)
+    end
+
+    it "fails when a line is removed from a shipped release" do
+      ship_named_release
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", ""))
+      git("commit", "-q", "-am", "a line lost")
+
+      expect { run_release("check") }.to raise_error(Release::Error, /v2026\.10\.27 has shipped.*- A bug\./m)
+    end
+
+    it "leaves untagged releases alone: a named one waiting to ship, or one a fork inherited" do
+      setup_repo(next_changelog: named)
+      clone.join("CHANGELOG.md").write(named.sub("- A bug.\n", "- A bug.\n- Added before the cut.\n"))
+      git("commit", "-q", "-am", "edit before shipping")
+
+      run_release("check")
+
+      expect(@output).to include("Shipped release notes are unchanged")
+    end
+  end
+
   describe "ship" do
     let(:release_pr) { { "headRefName" => "release/2026.10.27", "baseRefName" => "main" } }
     let(:main_sha) { git("rev-parse", "origin/main") }
