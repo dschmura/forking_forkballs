@@ -4,6 +4,12 @@ All notable changes to ModelRails are documented here, organized by phase.
 
 ## [Unreleased]
 
+## v2026.10.30
+
+### Added
+
+- Run 2 of the release test.
+
 ## v2026.10.29
 
 ### Added
