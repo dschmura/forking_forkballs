@@ -316,6 +316,11 @@ in `next`. A release the fork names itself never takes a name the template
 has used. If the template is private and the token can't read it,
 `bin/release` stops and says so.
 
+**A shipped release's notes don't change.** CI runs `bin/release check`, which
+fails a PR that adds, removes or edits a line in a release section that has
+been tagged, and names the line. A late line belongs under `[Unreleased]`, and
+ships with the next release.
+
 ## Cut a release
 
 ```bash
@@ -416,6 +421,9 @@ It does three things:
 If any step stops partway, run the same command again. It skips the merge
 when the PR is already merged, skips publishing when `v<name>` exists, and
 reuses a merge-back branch and PR that are already open.
+
+If the PR was merged on GitHub instead, `ship` still checks the merge. It
+refuses to publish when the merged branch wasn't at the commit you name.
 
 ## Merge main back into next
 
